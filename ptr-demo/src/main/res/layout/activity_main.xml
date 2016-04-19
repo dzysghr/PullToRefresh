@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.dzy.pulltorefresh.MainActivity">
+
+    <com.dzy.ptr.PullToRefreshLayout
+        android:id="@+id/ptrlayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/review"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    </com.dzy.ptr.PullToRefreshLayout>
+
+    <Button
+        android:onClick="onFailClick"
+        android:text="刷新失败"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_width="100dp"
+        android:layout_height="50dp"/>
+    <Button
+        android:text="刷新成功"
+        android:onClick="onOKClick"
+        android:layout_marginRight="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_width="100dp"
+        android:layout_height="50dp"/>
+
+</RelativeLayout>
