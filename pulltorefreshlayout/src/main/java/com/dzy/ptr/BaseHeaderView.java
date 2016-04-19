@@ -111,7 +111,7 @@ public abstract class BaseHeaderView extends FrameLayout
      * 当位置变化时此方法会被PullToRefreshLayout调用，可以通过这个偏移量和当前的状态来决定动画的样子
      * @param offset 位置偏移量，当下拉时从 0 到 MaxHeight,上升反之
      */
-    public abstract void onOffset(float offset);
+    public abstract void onPositionChange(float offset);
 
 
 //    @Override

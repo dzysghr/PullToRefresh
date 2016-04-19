@@ -19,7 +19,7 @@ import android.widget.FrameLayout;
  *
  * Created by dzysg on 2016/4/16 0016.
  */
-public class PullToRefreshLayout extends FrameLayout implements  ValueAnimator.AnimatorUpdateListener
+public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.AnimatorUpdateListener
 {
 
 
@@ -36,7 +36,7 @@ public class PullToRefreshLayout extends FrameLayout implements  ValueAnimator.A
     private boolean canOverTheHeaderHeight = false;
 
     //如果正在刷新的时候也可以拉动
-    private boolean canScrollWhenRefreshing = false;
+    private boolean canScrollWhenRefreshing = true;
 
     private int mHeaderHeight;
     private int mRefreshingHeight;
@@ -44,6 +44,7 @@ public class PullToRefreshLayout extends FrameLayout implements  ValueAnimator.A
     private boolean isRefreshing;
     private float startY;
     private float curY;
+    private float LastOffset = 0;
     float offsetY;
     private ValueAnimator mBackToTop;
     private ValueAnimator mBackToRefreshing;
@@ -75,7 +76,9 @@ public class PullToRefreshLayout extends FrameLayout implements  ValueAnimator.A
     }
 
 
-    /** 设置头部
+    /**
+     * 设置头部
+     *
      * @param header {@link BaseHeaderView} BaseHeaderView
      */
     public void setHeaderView(BaseHeaderView header)
@@ -121,17 +124,18 @@ public class PullToRefreshLayout extends FrameLayout implements  ValueAnimator.A
     }
 
 
-
-
+    /**
+     * 初始化各个动画，动画的数值不是传达室
+     */
     private void setUpAnimation()
     {
         //这个是下拉程度不够而返回顶部的动画
-        mBackToTop = ValueAnimator.ofFloat(curY, 0);
+        mBackToTop = new ValueAnimator();
         mBackToTop.setDuration(500);
         mBackToTop.addUpdateListener(this);
 
         //这个是下拉过了刷新线后，松开返回到正在刷新高度的动画
-        mBackToRefreshing = ValueAnimator.ofFloat(offsetY, mRefreshingHeight);
+        mBackToRefreshing =new ValueAnimator();
         mBackToRefreshing.setInterpolator(new DecelerateInterpolator(2));
         mBackToRefreshing.setDuration(500);
         mBackToRefreshing.addUpdateListener(this);
@@ -149,9 +153,9 @@ public class PullToRefreshLayout extends FrameLayout implements  ValueAnimator.A
 
 
         //这个是刷新完成后（无论成功失败），从正在刷新高度返回到顶部的隐藏动画，这个动画应该被headerview调用
-        mFinshAndBack = ValueAnimator.ofFloat(mRefreshingHeight, 0);
+        mFinshAndBack =new ValueAnimator();
         mFinshAndBack.setInterpolator(new DecelerateInterpolator(2));
-        mFinshAndBack.setDuration(500);
+        mFinshAndBack.setDuration(600);
         mFinshAndBack.addUpdateListener(this);
         mFinshAndBack.addListener(new AnimatorListenerAdapter()
         {
@@ -170,12 +174,22 @@ public class PullToRefreshLayout extends FrameLayout implements  ValueAnimator.A
             @Override
             public void onRefreshFinish()
             {
-                mFinshAndBack.start();
+                if (mChildView.getTranslationY()!=0)
+                {
+                    mFinshAndBack.setFloatValues(mChildView.getTranslationY(),0);
+                    mFinshAndBack.start();
+                }
+                else
+                    changeState(BaseHeaderView.HeaderState.hide);
             }
         });
 
     }
 
+
+    /** 所有的位移动画都调用这个方法，用来更新位置
+     * @param animation
+     */
     @Override
     public void onAnimationUpdate(ValueAnimator animation)
     {
@@ -183,8 +197,8 @@ public class PullToRefreshLayout extends FrameLayout implements  ValueAnimator.A
         mChildView.setTranslationY(val);
         float offset = -mHeaderHeight + (float) animation.getAnimatedValue();
         mHeaderView.setTranslationY(offset);
-        mHeaderView.onOffset(val);
-        offsetY = val;
+        mHeaderView.onPositionChange(val);
+        LastOffset = val;
     }
 
 
@@ -218,116 +232,156 @@ public class PullToRefreshLayout extends FrameLayout implements  ValueAnimator.A
         super.onLayout(changed, left, top, right, bottom);
     }
 
+
+
     @Override
-    public boolean onInterceptTouchEvent(MotionEvent ev)
+    public boolean dispatchTouchEvent(MotionEvent ev)
     {
+
         if (mHeaderView == null)
-            return false;
+            return super.dispatchTouchEvent(ev);
+        //如果刷新时不可以再拉动头部
+        if (isRefreshing&&!canScrollWhenRefreshing)
+            return super.dispatchTouchEvent(ev);
 
         switch (ev.getAction())
         {
             case MotionEvent.ACTION_DOWN:
-                curY = startY = ev.getY();
+                startY = ev.getY();
                 break;
             case MotionEvent.ACTION_MOVE:
                 curY = ev.getY();
                 float dy = curY - startY;
-                //如果是向下滑而且列表不可以再向下滑，则拦截下滑事件
-                if (dy > 0 && !canChildScrollUp())
+                //如果列表不可以再向上滑，则拦截事件
+                if (!canChildScrollUp())
                 {
-                    Log.i("tag", "cannot scroll up");
+
+                    //lastoffset 是最后一次抬手或者动画完成时的偏移量
+                    dy = dy / 1.5f;
+                    float newPos = LastOffset +dy;
+                    Log.d("tag","dy :"+dy+"  LastOffset :"+ LastOffset +" newPot :"+newPos);
+                    if (newPos<=0)
+                    {
+                        // 这里的
+                        LastOffset = 0;
+                        //MotionEvent e = MotionEvent.obtain(ev.getDownTime(), ev.getEventTime() + ViewConfiguration.getLongPressTimeout(), MotionEvent.ACTION_DOWN, ev.getX(), ev.getY(), ev.getMetaState());
+                        // TODO: 2016/4/19 0019 bug，down事件不拦截被下层接收，然后拦截部分move，然后再传递部分move到下层，造成下层接收到的down和move位置断层
+                        return super.dispatchTouchEvent(ev);
+                    }
+                    moveTo(newPos);
                     return true;
                 }
-        }
-        return super.onInterceptTouchEvent(ev);
-    }
+                break;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
 
+                offsetY = mChildView.getTranslationY();
+                LastOffset = offsetY;
+                if (offsetY == 0)
+                    break;
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event)
-    {
-        if (mHeaderView == null || mChildView == null)
-            return false;
-
-        if (isRefreshing)
-            return false;
-
-        switch (event.getAction())
-        {
-            case MotionEvent.ACTION_MOVE:
-                curY = event.getY();
-                //dy表示手指滑动的距离
-                float dy = curY - startY;
-
-                dy = Math.max(0, dy);           //dy不可以为负防止 内容跑到顶部以上去
-
-                // TODO: 2016/4/16 0016 这里的1.5是阻尼系数
-                offsetY  = dy/1.5f;
-
-                //如果下拉不可以超过header的高度
-                if (!canOverTheHeaderHeight)
-                    offsetY = Math.min(mHeaderHeight, offsetY);
-
-                //如果超过刷新线就要立即刷新的话
-                if (mRefreshImmediately&&offsetY>mThresholdHeight)
+                //如果下拉程度不达到刷新线
+                if (offsetY < mThresholdHeight)
                 {
-                    changeState(BaseHeaderView.HeaderState.refreshing);
-                    mHeaderView.startRefresh();
-                    isRefreshing =true;
-
-                    //如果开始刷新后需要立即返回到刷新高度的话
-                    if (mUpToRefredshingImmediately)
+                    //如果当前不是正在刷新，则回到顶部隐藏header
+                    if (!isRefreshing)
                     {
+                        mHeaderView.StateChange(BaseHeaderView.HeaderState.drag);
+                        //自动升回顶部,隐藏
+                        mBackToTop.setFloatValues(offsetY, 0);
+                        mBackToTop.start();
+
+                    }
+                    //如果正在刷新，且当前位置大于正在刷新高度
+                    else if (offsetY>mRefreshingHeight)
+                    {
+                        //自动升回顶部,隐藏
                         mBackToRefreshing.setFloatValues(offsetY, mRefreshingHeight);
+                        if (mBackToRefreshing.isRunning())
+                            mBackToRefreshing.cancel();
                         mBackToRefreshing.start();
                     }
                     return true;
                 }
-
-                mChildView.setTranslationY(offsetY);
-                mHeaderView.setTranslationY(-mHeaderHeight + offsetY);
-                mHeaderView.onOffset(offsetY);
-
-
-                //如果超过刷新阈值
-                if (offsetY < mThresholdHeight)
-                    changeState(BaseHeaderView.HeaderState.drag);
                 else
-                    changeState(BaseHeaderView.HeaderState.over);
-
-                return true;
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL:
-                offsetY = mChildView.getTranslationY();
-                //如果下拉程度不达到刷新线
-                if (offsetY < mThresholdHeight)
-                {
-                    //自动升回顶部,隐藏
-                    mHeaderView.StateChange(BaseHeaderView.HeaderState.drag);
-                    mBackToTop.setFloatValues(offsetY, 0);
-                    mBackToTop.start();
-                } else
                 {
                     //从超过刷新线升到正在刷新的高度
-                    changeState(BaseHeaderView.HeaderState.release);
-                    mBackToRefreshing.setFloatValues(offsetY,mRefreshingHeight);
+                    mBackToRefreshing.setFloatValues(offsetY, mRefreshingHeight);
+                    if (mBackToRefreshing.isRunning())
+                        mBackToRefreshing.cancel();
                     mBackToRefreshing.start();
-                    isRefreshing = true;
+
+                    //如果当前不是正在刷新，则触发释放状态
+                    if (!isRefreshing)
+                    {
+                        changeState(BaseHeaderView.HeaderState.release);
+                        isRefreshing = true;
+                    }
+                    return true;
                 }
-                return true;
         }
-        return super.onTouchEvent(event);
+        return super.dispatchTouchEvent(ev);
     }
 
+
+    private void moveTo(float to)
+    {
+
+        //如果下拉不可以超过header的高度
+        if (!canOverTheHeaderHeight)
+            to = Math.min(mHeaderHeight, to);
+
+        //如果超过刷新线就要立即刷新的话
+        if (mRefreshImmediately && to > mThresholdHeight)
+        {
+            changeState(BaseHeaderView.HeaderState.refreshing);
+            mHeaderView.startRefresh();
+            isRefreshing = true;
+
+            //如果开始刷新后需要立即返回到刷新高度的话
+            if (mUpToRefredshingImmediately)
+            {
+                mBackToRefreshing.setFloatValues(LastOffset, mRefreshingHeight);
+                mBackToRefreshing.start();
+            }
+            return;
+        }
+
+        OffsetTo(to);
+
+        if (!isRefreshing)
+        {
+            //如果超过刷新阈值
+            if (to < mThresholdHeight)
+                changeState(BaseHeaderView.HeaderState.drag);
+            else
+                changeState(BaseHeaderView.HeaderState.over);
+        }
+    }
+
+    private void OffsetTo(float to)
+    {
+        mChildView.setTranslationY(to);
+        mHeaderView.setTranslationY(-mHeaderHeight + to);
+        mHeaderView.onPositionChange(to);
+    }
+
+    /** 通知Header状态改变
+     * @param state 状态枚举 {@link com.dzy.ptr.BaseHeaderView.HeaderState}
+     */
     private void changeState(BaseHeaderView.HeaderState state)
     {
-        if (mHeaderState!=state)
+        if (mHeaderState != state)
         {
             mHeaderView.StateChange(state);
             mHeaderState = state;
         }
     }
 
+
+    /** 判断子控件能否向上滑
+     * @return 能则返回true
+     */
     private boolean canChildScrollUp()
     {
         if (mChildView == null)
