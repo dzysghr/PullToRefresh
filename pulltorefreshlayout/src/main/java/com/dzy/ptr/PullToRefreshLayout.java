@@ -24,13 +24,13 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 {
     // TODO: 2016/4/19 0019 增加自动刷新功能
     // TODO: 2016/4/19 0019 未向外部暴露各个接口
-    // TODO: 2016/4/19 0019 刷新完成时强制上升了
+    // TODO: 2016/4/19 0019 刷新完成时强制上升了！！！！！！
     View mChildView;
     BaseHeaderView mHeaderView;
 
     //实现
     //超过刷新线马上刷新
-    private boolean mRefreshImmediately = false;
+    private boolean mRefreshImmediately = true;
 
     //考虑到代码复杂度，未实现,功能实用性有待思考
     //开始刷新后不等松手马上回到刷新高度
@@ -47,7 +47,17 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     private int mHeaderHeight;
     private int mRefreshingHeight;
     private int mThresholdHeight;
+
+    //是否正在刷新
     private boolean isRefreshing;
+
+    //是否已经刷新完成
+    private boolean isFinish;
+
+    //手指是否还在屏幕上
+    private boolean isOnTouch = false;// TODO: 2016/4/20 0020 还没作用
+
+
     private float startY;
 
     //lastoffset 是最后一次抬手或者动画完成时的偏移量
@@ -83,7 +93,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     {
         super(context, attrs, defStyleAttr, defStyleRes);
     }
-
 
     /**
      * 设置头部
@@ -168,11 +177,13 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         mFinshAndBack.addUpdateListener(this);
         mFinshAndBack.addListener(new AnimatorListenerAdapter()
         {
+
             @Override
             public void onAnimationEnd(Animator animation)
             {
                 super.onAnimationEnd(animation);
                 changeState(BaseHeaderView.HeaderState.hide);
+                isFinish = false;
             }
         });
 
@@ -198,7 +209,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     /**
      * 所有的位移动画都调用这个方法，用来更新位置
-     *
      * @param animation 当前动画
      */
     @Override
@@ -211,20 +221,26 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
 
     /**
-     * 刷新完成
+     * 刷新成功
      */
-    public void finishRefresh()
+    public void succeedRefresh()
     {
+        isFinish = true;
         if (isRefreshing)
         {
             isRefreshing = false;
             changeState(BaseHeaderView.HeaderState.finish);
             mHeaderView.onFinishRefresh();
         }
+
     }
 
+    /**
+     * 刷新失败
+     */
     public void failRefresh()
     {
+        isFinish = true;
         if (isRefreshing)
         {
             isRefreshing = false;
@@ -232,7 +248,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             mHeaderView.onFinishRefresh();
         }
     }
-
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom)
@@ -257,6 +272,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         {
             case MotionEvent.ACTION_DOWN:
                 startY = ev.getY();
+                isOnTouch =true;
                 break;
             case MotionEvent.ACTION_MOVE:
                 float curY = ev.getY();
@@ -289,6 +305,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                             //在理想状态下，当header从显示变为隐藏时，newOffset从正渐变为0，当newOffset为0时，mChildView和mHeaderView的TranslationY都应该为0，
                             //但是由于浮点值不一定会出现刚好为0的情况，可能直接从0.12变为-0.02，所以这里强制设为0
                             mChildView.setTranslationY(0);
+                            mHeaderView.setTranslationY(-mHeaderHeight);
                             LastOffset = 0f;
 
 
@@ -300,12 +317,18 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                         }
                     }
 
+                    // TODO: 2016/4/20 0020 还是有点问题
+                    MotionEvent cancelEvent = MotionEvent.obtain(ev.getDownTime(), ev.getEventTime() + ViewConfiguration.getLongPressTimeout(), MotionEvent.ACTION_CANCEL, ev.getX(), ev.getY(), ev.getMetaState());
+                    super.dispatchTouchEvent(cancelEvent);
+                    Log.i("tag", "move offset");
                     moveTo(newOffset);
                     return true;
                 }
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
+
+                isOnTouch =false;
 
                 offsetY = mChildView.getTranslationY();
                 LastOffset = offsetY;
@@ -314,6 +337,17 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                 //如果header已经完全隐藏了，则由子view去处理action_up和cancel事件
                 if (offsetY <= 0)
                     break;
+
+                if (isFinish)
+                {
+                    mHeaderView.StateChange(BaseHeaderView.HeaderState.finish);
+                    mFinshAndBack.setFloatValues(offsetY,0);
+                    if (mFinshAndBack.isRunning())
+                        mFinshAndBack.cancel();
+                    mFinshAndBack.start();
+                    return true;
+                }
+
 
                 //如果下拉程度不达到刷新线
                 if (offsetY < mThresholdHeight)
@@ -366,6 +400,9 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     private void moveTo(float to)
     {
 
+
+
+
         //如果下拉不可以超过header的高度
         if (!canOverTheHeaderHeight)
             to = Math.min(mHeaderHeight, to);
@@ -409,7 +446,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     /**
      * 通知Header状态改变
-     *
      * @param state 状态枚举 {@link com.dzy.ptr.BaseHeaderView.HeaderState}
      */
     private void changeState(BaseHeaderView.HeaderState state)
@@ -423,7 +459,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     /**
      * 判断子控件能否向上滑
-     *
      * @return 能则返回true
      */
     private boolean canChildScrollUp()
