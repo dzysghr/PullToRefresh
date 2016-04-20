@@ -2,7 +2,6 @@ package com.dzy.pulltorefresh;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,9 +36,9 @@ public class HeaderView extends BaseHeaderView
 
 
     @Override
-    public void init(Context context, AttributeSet attrs, int defStyleAttr)
+    public void init(Context context)
     {
-        setWillNotDraw(false);
+
         View v = LayoutInflater.from(context).inflate(R.layout.headerlayout,this);
         mTV = (TextView) v.findViewById(R.id.tv);
         mPb = (ProgressBar) v.findViewById(R.id.pb);
@@ -121,7 +120,7 @@ public class HeaderView extends BaseHeaderView
         }
         mLastState = state;
         Log.d("tag", state.toString());
-        requestLayout();
+        //requestLayout();
     }
 
     @Override
@@ -143,7 +142,7 @@ public class HeaderView extends BaseHeaderView
     }
 
     @Override
-    public void onOffset(float offset)
+    public void onPositionChange(float offset)
     {
         //requestLayout();
         //Log.d("tag", "offset " + offset);
@@ -153,15 +152,15 @@ public class HeaderView extends BaseHeaderView
     protected void onDraw(Canvas canvas)
     {
         super.onDraw(canvas);
-        //Log.i("tag", "ondraw");
-        //canvas.drawColor(0xFFFFF112);
+        Log.i("tag", "ondraw");
+        canvas.drawColor(0xFFFFa112);
     }
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom)
     {
         super.onLayout(changed, left, top, right, bottom);
-        //Log.i("tag", "onLayout");
+        Log.i("tag", "onLayout");
     }
 
 }

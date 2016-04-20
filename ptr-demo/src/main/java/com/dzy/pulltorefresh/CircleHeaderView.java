@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.util.AttributeSet;
 import android.util.Log;
 
 import com.dzy.ptr.BaseHeaderView;
@@ -26,10 +25,8 @@ public class CircleHeaderView extends BaseHeaderView
     }
 
 
-
-
     @Override
-    public void init(Context context, AttributeSet attrs, int defStyleAttr)
+    public void init(Context context)
     {
         p = new Paint();
         grean = new Paint();
@@ -92,7 +89,7 @@ public class CircleHeaderView extends BaseHeaderView
     int state = 1;
     float mOffset;
     @Override
-    public void onOffset(float offset)
+    public void onPositionChange(float offset)
     {
         Log.i("tag", "offset " + offset);
         mOffset = offset;

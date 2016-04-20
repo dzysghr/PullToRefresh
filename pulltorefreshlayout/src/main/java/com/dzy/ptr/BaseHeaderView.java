@@ -1,7 +1,6 @@
 package com.dzy.ptr;
 
 import android.content.Context;
-import android.util.AttributeSet;
 import android.widget.FrameLayout;
 
 /**
@@ -32,24 +31,15 @@ public abstract class BaseHeaderView extends FrameLayout
 
     public BaseHeaderView(Context context)
     {
-        this(context, null);
-    }
-
-    public BaseHeaderView(Context context, AttributeSet attrs)
-    {
-        this(context, attrs, 0);
-    }
-
-    public BaseHeaderView(Context context, AttributeSet attrs, int defStyleAttr)
-    {
-        super(context, attrs, defStyleAttr);
+        super(context);
+        init(context);
         setWillNotDraw(false);
-        init(context, attrs, defStyleAttr);
-
     }
 
 
-    public abstract void init(Context context, AttributeSet attrs, int defStyleAttr);
+    /** 初始化函数，在构造函数中被调用。
+     */
+    public abstract void init(Context context);
 
 
     /** 返回头部能下拉的最大高度,单位px
