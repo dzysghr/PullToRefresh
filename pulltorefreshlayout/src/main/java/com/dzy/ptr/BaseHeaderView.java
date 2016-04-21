@@ -1,6 +1,7 @@
 package com.dzy.ptr;
 
 import android.content.Context;
+import android.util.Log;
 import android.widget.FrameLayout;
 
 /**
@@ -85,6 +86,15 @@ public abstract class BaseHeaderView extends FrameLayout
     public abstract void onPositionChange(float offset);
 
 
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
+    {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        int width =MeasureSpec.getSize(widthMeasureSpec);
+        int height = MeasureSpec.getSize(heightMeasureSpec);
 
-
+//
+        Log.d("onmeasure", "headerview  width " + width + "   height " + height);
+//        setMeasuredDimension(width,getMeasuredHeight());
+    }
 }
