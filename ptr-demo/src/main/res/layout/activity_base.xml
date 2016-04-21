@@ -18,4 +18,19 @@
 
     </com.dzy.ptr.PullToRefreshLayout>
 
+    <Button
+        android:onClick="onFailClick"
+        android:text="刷新失败"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_width="100dp"
+        android:layout_height="50dp"/>
+    <Button
+        android:text="刷新成功"
+        android:onClick="onOKClick"
+        android:layout_marginRight="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_width="100dp"
+        android:layout_height="50dp"/>
+
 </RelativeLayout>

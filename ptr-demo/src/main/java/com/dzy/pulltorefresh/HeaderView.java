@@ -119,7 +119,7 @@ public class HeaderView extends BaseHeaderView
 
         }
         mLastState = state;
-        Log.d("tag", state.toString());
+        Log.d("stateChange", state.toString());
         //requestLayout();
     }
 
@@ -130,15 +130,15 @@ public class HeaderView extends BaseHeaderView
     }
 
     @Override
-    public void onFinishRefresh()
+    public void onSucceedRefresh()
     {
-        notifyUpToTop();
+
     }
 
     @Override
     public void onFailRefresh()
     {
-        notifyUpToTop();
+
     }
 
     @Override

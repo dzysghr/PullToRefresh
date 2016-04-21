@@ -5,18 +5,12 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 <TextView
-    android:layout_marginLeft="10dp"
-    android:textSize="20sp"
+    android:gravity="center_vertical"
+    android:layout_marginLeft="16dp"
+    android:textSize="16sp"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="50dp"
     android:id="@+id/tvTitile"
     android:text="title"/>
-<TextView
-    android:layout_marginLeft="10dp"
-    android:layout_marginTop="10dp"
-    android:text="content"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:id="@+id/tvContent"/>
 
 </LinearLayout>

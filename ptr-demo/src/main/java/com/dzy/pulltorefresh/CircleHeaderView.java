@@ -71,15 +71,15 @@ public class CircleHeaderView extends BaseHeaderView
     }
 
     @Override
-    public void onFinishRefresh()
+    public void onSucceedRefresh()
     {
-        notifyUpToTop();
+
     }
 
     @Override
     public void onFailRefresh()
     {
-        notifyUpToTop();
+
     }
 
 
