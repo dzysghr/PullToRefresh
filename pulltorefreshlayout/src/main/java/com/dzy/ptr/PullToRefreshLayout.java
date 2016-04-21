@@ -24,7 +24,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 {
     // TODO: 2016/4/19 0019 增加自动刷新功能
     // TODO: 2016/4/19 0019 未向外部暴露各个接口
-    // TODO: 2016/4/19 0019 刷新完成时强制上升了！！！！！！
+
     View mChildView;
     BaseHeaderView mHeaderView;
 
@@ -73,6 +73,8 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     //lastPos 是最近一次抬手或者动画完成时的ChildView的偏移量
     private float LastPos = 0;
 
+
+    private boolean mHasSendCancel = false;
 
     private ValueAnimator mBackToTop;
     private ValueAnimator mBackToRefreshing;
@@ -132,7 +134,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
 
         addView(mHeaderView);
-        bringChildToFront(mHeaderView);
         setUpAnimation();
 
     }
@@ -151,7 +152,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
         if (mHeaderView != null)
         {
-
             final int left = paddingLeft;
             final int top = paddingTop + (int) offsetY - mHeaderHeight;
             final int right = left + mHeaderView.getMeasuredWidth();
@@ -163,7 +163,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         }
         if (mChildView != null)
         {
-
             final int left = paddingLeft;
             final int top = paddingTop + (int) offsetY;
             final int right = left + mChildView.getMeasuredWidth();
@@ -324,6 +323,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                 {
                     startY = ev.getY();
                     isOnTouch = true;
+                    mHasSendCancel = false;
                     break;
                 }
             case MotionEvent.ACTION_MOVE:
@@ -338,39 +338,47 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                     //dy为滑动距离，被childview消费的不算
                     float dy = curY - startY;
                     //getNestedScrollAxes()
-                    //1.5是阻尼系数，为了产生韧性效果
-                    dy = dy / 1.5f;
+                    //1.5是阻尼系数，为了产生韧性效果,下拉时才会有
+                        dy = dy / 2f;
 
                     //lastPos 是最后一次抬手或者动画完成时的偏移量
-                    float newOffset = LastPos + dy;
+                    float newOffset = LastPos + (int)dy;
 
                     Log.d("offset", "dy :" + dy + "  LastPos :" + LastPos + " newPot :" + newOffset+" start "+startY);
 
                     //newOffset等于0说明header已经刚好完全隐藏了，小于0时应该传下层去处理move事件
                     if (newOffset < 0)
                     {
-                        if (LastPos == 0f)
+                        if (!mHasSendCancel)
+                        {
+                            Log.e("tag", "!mHasSendCancel");
                             return super.dispatchTouchEvent(ev);
+                        }
                         else
                         {
-                            //在理想状态下，当header从显示变为隐藏时，newOffset从正渐变为0，当newOffset为0时，mChildView和mHeaderView的offset都应该为0，
-                            //但是由于浮点值不一定会出现刚好为0的情况，可能直接从0.12变为-0.02，所以这里强制设为0
-                            //performOffsetTo(0);
-                            LastPos = 0f;
 
-
-                            //down事件被下层接收，向上移动，拦截部分move来隐藏header，当头部完全隐藏后的move应该传递到下层，
+                            LastPos = 0;
+                            performOffsetTo(0);
+                            Log.e("tag", "send down event");
+                            //down事件被下层接收，向上移动，拦截部分move来隐藏header，当头部完全隐藏后,move应该传递到下层，
                             // 造成下层接收到的down和move位置断层，会出现下层瞬移的现象，所以这里手动发
                             // 一个down事件给子view，覆盖之前的down,以后直接将move事件传递下去
                             MotionEvent e = MotionEvent.obtain(ev.getDownTime(), ev.getEventTime() + ViewConfiguration.getLongPressTimeout(), MotionEvent.ACTION_DOWN, ev.getX(), ev.getY(), ev.getMetaState());
+                            mHasSendCancel = false;
                             return super.dispatchTouchEvent(e);
                         }
                     }
 
-                    // TODO: 2016/4/20 0020 还是有点问题，但不明显，慢慢优化
-                    MotionEvent cancelEvent = MotionEvent.obtain(ev.getDownTime(), ev.getEventTime() + ViewConfiguration.getLongPressTimeout(), MotionEvent.ACTION_CANCEL, ev.getX(), ev.getY(), ev.getMetaState());
-                    super.dispatchTouchEvent(cancelEvent);
-                    //Log.i("tag", "move offset");
+                    if (!mHasSendCancel)
+                    {
+                        Log.e("tag", "send cancel event");
+
+                        //down事件被下层接收，造成下层控件显示按下效果（比如listview按下时Item颜色加深），如果此后要拦截move事件，就发一个cancel事件让下层view取消按下的效果
+                        MotionEvent cancelEvent = MotionEvent.obtain(ev.getDownTime(), ev.getEventTime() + ViewConfiguration.getLongPressTimeout(), MotionEvent.ACTION_CANCEL, ev.getX(), ev.getY(), ev.getMetaState());
+                        super.dispatchTouchEvent(cancelEvent);
+                        mHasSendCancel = true;
+                    }
+
                     moveTo(newOffset);
                     return true;
                 }
@@ -442,7 +450,9 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         }
 
         if (ev.getAction() == MotionEvent.ACTION_CANCEL || ev.getAction() == MotionEvent.ACTION_UP)
-            Log.e("tag", "child view get cancel");
+        Log.e("tag", "child view get cancel");
+        if (ev.getAction() == MotionEvent.ACTION_DOWN)
+            Log.e("tag", "child view get Down");
         return super.dispatchTouchEvent(ev);
     }
 
@@ -488,23 +498,22 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             else
                 changeState(BaseHeaderView.HeaderState.over);
         }
-
-
     }
 
 
     private void performOffsetTo(float to)
     {
 
-        int x = (int) (to - offsetY);
-        Log.d("x","x  "+x);
+        int change = (int) (to - offsetY);
+        Log.d("x","x  "+change);
 
-        if (x==0)
+        if (change==0)
             return;
-        mChildView.offsetTopAndBottom(x);
-        mHeaderView.offsetTopAndBottom(x);
+        mChildView.offsetTopAndBottom(change);
+        mHeaderView.offsetTopAndBottom(change);
 
-        offsetY = to;
+        invalidate();
+        offsetY = offsetY+change;
     }
 
     /**
