@@ -10,8 +10,6 @@ import android.widget.FrameLayout;
 public abstract class BaseHeaderView extends FrameLayout
 {
 
-    protected FinishLisenter mFinishLisenter;
-
     public enum HeaderState
     {
 
@@ -22,11 +20,6 @@ public abstract class BaseHeaderView extends FrameLayout
         finish,//刷新完成-正在返回顶部
         fail,//刷新失败-正在返回顶部
         hide //返回顶部，完全隐藏
-    }
-
-    interface FinishLisenter
-    {
-        void onRefreshFinish();
     }
 
     public BaseHeaderView(Context context)
@@ -54,7 +47,7 @@ public abstract class BaseHeaderView extends FrameLayout
     public abstract int getThresholdHeight();
 
 
-    /**正在刷新时的高度,单位px，这个值应该小于等于{@link #getMaxHeight()}
+    /**正在刷新时的高度,单位px，这个值应该小于等于 MaxHeight
      * @return 正在刷新时的高度
      */
     public abstract int getRefreshingHeight();
@@ -73,28 +66,16 @@ public abstract class BaseHeaderView extends FrameLayout
 
 
     /**
-     *  刷新成功时，此方法被调用，在此方法实现刷新完成之后，header向上隐藏之前的动画
-     *  完成此动画后，应该手动调用{@link #notifyUpToTop()}来隐藏header
+     *  刷新成功时，此方法被调用
      */
-    public abstract void onFinishRefresh();
+    public abstract void onSucceedRefresh();
 
 
     /**
-     *  刷新失败时，此方法被调用，在此方法实现刷新完成之后，header向上隐藏之前的动画
-     *  完成此动画后，应该手动调用{@link #notifyUpToTop()}来隐藏header
+     *  刷新失败时，此方法被调用
      */
     public abstract void onFailRefresh();
 
-
-
-    /**
-     *  在“刷新完成” 动画结束后应该调用此方法隐藏Header
-     */
-    public void notifyUpToTop()
-    {
-        if (mFinishLisenter != null)
-            mFinishLisenter.onRefreshFinish();
-    }
 
 
     /**
@@ -104,16 +85,6 @@ public abstract class BaseHeaderView extends FrameLayout
     public abstract void onPositionChange(float offset);
 
 
-//    @Override
-//    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
-//    {
-//        int width = MeasureSpec.getSize(widthMeasureSpec);
-//        setMeasuredDimension(width,getMeasuredHeight());
-//    }
 
-    final public void setFinishLisenter(FinishLisenter finishLisenter)
-    {
-        mFinishLisenter = finishLisenter;
-    }
 
 }
