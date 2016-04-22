@@ -7,13 +7,13 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.AbsListView;
 import android.widget.FrameLayout;
 
 /**
@@ -46,8 +46,12 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     public boolean canScrollWhenRefreshing = true;
 
 
-    // TODO: 2016/4/21 0021 头部是随着下拉向下移动还是随着下拉逐渐显露出来
-    public boolean mHeaderMove = false;
+    //内容向下偏移，头部固定逐渐显示
+    public boolean mPinHeader = false;
+
+    //内容固定，头部向下偏移，显示在内容上层
+    public boolean mPinContent = false;
+
 
     //刷新回调，当刷新发生时会回调该接口
     private RefreshLinstener mRefreshLinstener;
@@ -149,24 +153,41 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     {
         int paddingLeft = getPaddingLeft();
         int paddingTop = getPaddingTop();
-
+        int top = 0;
+        int right = 0;
+        int bottom = 0;
+        int left = paddingLeft;
         if (mHeaderView != null)
         {
-            final int left = paddingLeft;
-            final int top = paddingTop + (int) offsetY - mHeaderHeight;
-            final int right = left + mHeaderView.getMeasuredWidth();
-            final int bottom = top + mHeaderView.getMeasuredHeight();
+
+            //如果header是固定模式
+            if (mPinHeader)
+            {
+                top = paddingTop;
+            } else
+            {
+                top = paddingTop + (int) offsetY - mHeaderHeight;
+            }
+            right = left + mHeaderView.getMeasuredWidth();
+            bottom = top + mHeaderView.getMeasuredHeight();
 
             Log.d("onLayout", "left " + left + " top " + top + " right " + right + " bottom " + bottom);
             mHeaderView.layout(left, top, right, bottom);
 
         }
+
         if (mChildView != null)
         {
-            final int left = paddingLeft;
-            final int top = paddingTop + (int) offsetY;
-            final int right = left + mChildView.getMeasuredWidth();
-            final int bottom = top + mChildView.getMeasuredHeight();
+
+            if (mPinContent)
+                top = paddingTop;
+            else
+            {
+                top = paddingTop + (int) offsetY;
+            }
+            left = paddingLeft;
+            right = left + mChildView.getMeasuredWidth();
+            bottom = top + mChildView.getMeasuredHeight();
             mChildView.layout(left, top, right, bottom);
         }
     }
@@ -189,7 +210,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
 
     /**
-     * 初始化各个动画，动画的数值不是传达室
+     * 初始化各个动画
      */
     private void setUpAnimation()
     {
@@ -268,7 +289,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
                 if (offsetY != 0)
                 {
-                    mFinshAndBack.setIntValues((int)offsetY, 0);
+                    mFinshAndBack.setIntValues((int) offsetY, 0);
                     mFinshAndBack.start();
                 } else
                     changeState(BaseHeaderView.HeaderState.hide);
@@ -294,7 +315,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
                 if (offsetY != 0)
                 {
-                    mFinshAndBack.setIntValues((int)offsetY, 0);
+                    mFinshAndBack.setIntValues((int) offsetY, 0);
                     mFinshAndBack.start();
                 } else
                     changeState(BaseHeaderView.HeaderState.hide);
@@ -321,6 +342,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                     break;
                 else
                 {
+                    cancelAnimIfNeed();
                     startY = ev.getY();
                     isOnTouch = true;
                     mHasSendCancel = false;
@@ -339,12 +361,12 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                     float dy = curY - startY;
                     //getNestedScrollAxes()
                     //1.5是阻尼系数，为了产生韧性效果,下拉时才会有
-                        dy = dy / 2f;
+                    dy = dy / 2f;
 
                     //lastPos 是最后一次抬手或者动画完成时的偏移量
-                    float newOffset = LastPos + (int)dy;
+                    float newOffset = LastPos + (int) dy;
 
-                    Log.d("offset", "dy :" + dy + "  LastPos :" + LastPos + " newPot :" + newOffset+" start "+startY);
+                    Log.d("offset", "dy :" + dy + "  LastPos :" + LastPos + " newPot :" + newOffset + " start " + startY);
 
                     //newOffset等于0说明header已经刚好完全隐藏了，小于0时应该传下层去处理move事件
                     if (newOffset < 0)
@@ -353,8 +375,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                         {
                             Log.e("tag", "!mHasSendCancel");
                             return super.dispatchTouchEvent(ev);
-                        }
-                        else
+                        } else
                         {
 
                             LastPos = 0;
@@ -397,7 +418,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                 if (isFinish)
                 {
                     mHeaderView.StateChange(BaseHeaderView.HeaderState.finish);
-                    mFinshAndBack.setIntValues((int)offsetY, 0);
+                    mFinshAndBack.setIntValues((int) offsetY, 0);
                     if (mFinshAndBack.isRunning())
                         mFinshAndBack.cancel();
                     mFinshAndBack.start();
@@ -413,7 +434,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                     {
                         mHeaderView.StateChange(BaseHeaderView.HeaderState.drag);
                         //自动升回顶部,隐藏
-                        mBackToTop.setIntValues((int)offsetY, 0);
+                        mBackToTop.setIntValues((int) offsetY, 0);
                         mBackToTop.start();
                         return true;
                     }
@@ -421,7 +442,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                     else if (offsetY > mRefreshingHeight)
                     {
                         //升到正在刷新高度
-                        mBackToRefreshing.setIntValues((int)offsetY, mRefreshingHeight);
+                        mBackToRefreshing.setIntValues((int) offsetY, mRefreshingHeight);
                         if (mBackToRefreshing.isRunning())
                             mBackToRefreshing.cancel();
                         mBackToRefreshing.start();
@@ -432,7 +453,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                 } else//如果下拉达到了刷新线
                 {
                     //从超过刷新线升到正在刷新的高度
-                    mBackToRefreshing.setIntValues((int)offsetY, mRefreshingHeight);
+                    mBackToRefreshing.setIntValues((int) offsetY, mRefreshingHeight);
                     if (mBackToRefreshing.isRunning())
                         mBackToRefreshing.cancel();
                     mBackToRefreshing.start();
@@ -450,13 +471,16 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         }
 
         if (ev.getAction() == MotionEvent.ACTION_CANCEL || ev.getAction() == MotionEvent.ACTION_UP)
-        Log.e("tag", "child view get cancel");
+            Log.e("tag", "child view get cancel");
         if (ev.getAction() == MotionEvent.ACTION_DOWN)
             Log.e("tag", "child view get Down");
         return super.dispatchTouchEvent(ev);
     }
 
 
+    /** 将内容和头部移动到指定的位置
+     * @param to 偏移量，px
+     */
     private void moveTo(float to)
     {
 
@@ -465,7 +489,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             to = Math.min(mHeaderHeight, to);
 
         performOffsetTo(to);
-        mHeaderView.onPositionChange(to);
 
 
         //如果超过刷新线就要立即刷新的话
@@ -482,7 +505,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             //如果开始刷新后需要立即返回到刷新高度的话
             if (mUpToRefredshingImmediately)
             {
-                mBackToRefreshing.setIntValues((int)to, mRefreshingHeight);
+                mBackToRefreshing.setIntValues((int) to, mRefreshingHeight);
                 mBackToRefreshing.start();
             }
             return;
@@ -505,16 +528,32 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     {
 
         int change = (int) (to - offsetY);
-        Log.d("x","x  "+change);
+        Log.d("change", "performOffsetTo  " + change);
 
-        if (change==0)
+        if (change == 0)
             return;
-        mChildView.offsetTopAndBottom(change);
-        mHeaderView.offsetTopAndBottom(change);
+        if (!mPinHeader)
+            mHeaderView.offsetTopAndBottom(change);
 
+        if (!mPinContent)
+            mChildView.offsetTopAndBottom(change);
+
+        mHeaderView.onPositionChange(to);
         invalidate();
-        offsetY = offsetY+change;
+        offsetY = offsetY + change;
     }
+
+    private void cancelAnimIfNeed()
+    {
+        if(mBackToTop.isRunning())
+            mBackToTop.cancel();
+        if (mBackToRefreshing.isRunning())
+            mBackToRefreshing.cancel();
+        if (mFinshAndBack.isRunning())
+            mFinshAndBack.cancel();
+
+    }
+
 
     /**
      * 通知Header状态改变
@@ -537,11 +576,27 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
      */
     private boolean canChildScrollUp()
     {
-        //如果
+        //如果用户自己实现判断逻辑，则以用户的逻辑为准
         if (mCondition != null)
             return mCondition.canScroll();
 
-        return mChildView != null && mChildView.canScrollVertically(-1);
+        if (mChildView == null)
+            return true;
+
+        if (android.os.Build.VERSION.SDK_INT < 14)
+        {
+            if (mChildView instanceof AbsListView)
+            {
+                final AbsListView absListView = (AbsListView) mChildView;
+                return absListView.getChildCount() > 0 && (absListView.getFirstVisiblePosition() > 0 || absListView.getChildAt(0).getTop() < absListView.getPaddingTop());
+            } else
+            {
+                return mChildView.getScrollY() > 0;
+            }
+        } else
+        {
+            return mChildView.canScrollVertically(-1);
+        }
     }
 
     /*
