@@ -9,6 +9,11 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.dzy.ptr.BaseHeaderView;
 
@@ -19,7 +24,7 @@ public class CircleHeaderView extends BaseHeaderView
 {
 
     int BigRadius = 30;
-    float BigCircleMargin = 15;
+    float BigCircleMargin = 20;
 
     float curBigRadius;
     float curSmallRadius;
@@ -28,7 +33,8 @@ public class CircleHeaderView extends BaseHeaderView
 
     Paint p;
     HeaderState mHeaderState;
-
+    ProgressBar mPb;
+    TextView mTv;
 
     public CircleHeaderView(Context context)
     {
@@ -42,7 +48,24 @@ public class CircleHeaderView extends BaseHeaderView
         p = new Paint();
         p.setColor(Color.GRAY);
         p.setAntiAlias(true);
+        mPb = new ProgressBar(getContext());
+        LayoutParams params = new LayoutParams(60,60);
+        params.bottomMargin = 10;
+        params.gravity = Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL;
 
+        mTv = new TextView(getContext());
+        LayoutParams textparams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        textparams.bottomMargin = 10;
+        textparams.gravity = Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL;
+        mTv.setTextSize(12);
+
+
+        addView(mPb,params);
+        addView(mTv,textparams);
+
+
+        mTv.setVisibility(View.INVISIBLE);
+        mPb.setVisibility(View.INVISIBLE);
     }
 
 
@@ -74,6 +97,12 @@ public class CircleHeaderView extends BaseHeaderView
             StartBacktoRefresh();
         }
         Log.d("state", "statechange  " + mHeaderState.toString());
+
+        if (mHeaderState==HeaderState.hide)
+        {
+            mPb.setVisibility(View.INVISIBLE);
+            mTv.setVisibility(View.INVISIBLE);
+        }
     }
 
     @Override
@@ -85,13 +114,17 @@ public class CircleHeaderView extends BaseHeaderView
     @Override
     public void onSucceedRefresh()
     {
-
+        mTv.setVisibility(View.VISIBLE);
+        mTv.setText("刷新成功");
+        mPb.setVisibility(View.INVISIBLE);
     }
 
     @Override
     public void onFailRefresh()
     {
-
+        mTv.setVisibility(View.VISIBLE);
+        mTv.setText("刷新失败");
+        mPb.setVisibility(View.INVISIBLE);
     }
 
 
@@ -109,7 +142,7 @@ public class CircleHeaderView extends BaseHeaderView
         Log.i("tag", "offset " + offset);
 
         mOffset = offset;
-        if (mOffset <= 80)
+        if (mOffset <= 2*(BigRadius+BigCircleMargin))
             mState = 0;
         else
             mState = 1;
@@ -140,12 +173,7 @@ public class CircleHeaderView extends BaseHeaderView
                 drawBig(canvas);
                 drawSmall(canvas);
                 drawLine(canvas);
-            } else
-            {
-                //画正在刷新的动画
-                drawBig(canvas);
             }
-
         }
 
     }
@@ -156,7 +184,7 @@ public class CircleHeaderView extends BaseHeaderView
         final float deY = curSmallY - curBigY;
 
         ValueAnimator anim = ValueAnimator.ofFloat(deY, 0);
-        anim.setDuration(300);
+        anim.setDuration(100);
         anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener()
         {
             @Override
@@ -164,9 +192,8 @@ public class CircleHeaderView extends BaseHeaderView
             {
                 float val = (float) animation.getAnimatedValue();
                 curSmallY = curBigY + val;
-                curSmallRadius += 0.5;
+                curSmallRadius += 1;
                 curSmallRadius = Math.min(curBigRadius, curSmallRadius);
-
                 invalidate();
             }
         });
@@ -177,7 +204,7 @@ public class CircleHeaderView extends BaseHeaderView
             {
                 super.onAnimationEnd(animation);
                 isAnimatingBackToRefresh = false;
-
+                mPb.setVisibility(View.VISIBLE);
             }
         });
         isAnimatingBackToRefresh = true;
@@ -204,7 +231,7 @@ public class CircleHeaderView extends BaseHeaderView
 
     private void drawMoveBig(Canvas canvas)
     {
-        canvas.drawCircle(getMeasuredWidth() / 2, getMaxHeight() - 10 - BigRadius, BigRadius, p);
+        canvas.drawCircle(getMeasuredWidth() / 2, getMaxHeight() - BigCircleMargin - BigRadius, BigRadius, p);
     }
 
     private void drawDragSmall(Canvas canvas)
@@ -237,6 +264,20 @@ public class CircleHeaderView extends BaseHeaderView
     private void drawSmall(Canvas canvas)
     {
         canvas.drawCircle(getMeasuredWidth() / 2, curSmallY, curSmallRadius, p);
+    }
+
+    private void drawRefreshing(Canvas canvas)
+    {
+        canvas.save();
+
+
+
+        float cx = getMeasuredWidth() / 2;
+        curBigY = getMaxHeight() - mOffset + BigCircleMargin + BigRadius;
+        canvas.drawCircle(cx, curBigY, curBigRadius, p);
+
+
+
     }
 
 }
