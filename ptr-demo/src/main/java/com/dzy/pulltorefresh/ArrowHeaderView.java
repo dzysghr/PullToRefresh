@@ -17,7 +17,7 @@ import com.dzy.ptr.BaseHeaderView;
  *
  * Created by dzysg on 2016/4/16 0016.
  */
-public class HeaderView extends BaseHeaderView
+public class ArrowHeaderView extends BaseHeaderView
 {
 
     TextView mTV;
@@ -28,7 +28,7 @@ public class HeaderView extends BaseHeaderView
     private RotateAnimation mFlipAnimation;
     private RotateAnimation mReverseFlipAnimation;
     private HeaderState mLastState = HeaderState.drag;
-    public HeaderView(Context context)
+    public ArrowHeaderView(Context context)
     {
         super(context);
     }

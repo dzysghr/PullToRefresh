@@ -27,9 +27,6 @@ public class BaseActivity extends AppCompatActivity
         mLayout = (PullToRefreshLayout) findViewById(R.id.ptrlayout);
 
 
-        mLayout.setHeaderView(new HeaderView(this));
-
-
         List<String> list = new ArrayList<String>();
         for(int i=0;i<20;i++)
             list.add(""+i);
