@@ -7,5 +7,5 @@ package com.dzy.ptr;
  */
 public interface ScrollCondition
 {
-    boolean canScroll();
+    boolean canScrollUp();
 }

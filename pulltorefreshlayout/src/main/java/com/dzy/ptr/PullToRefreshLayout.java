@@ -189,6 +189,8 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             right = left + mChildView.getMeasuredWidth();
             bottom = top + mChildView.getMeasuredHeight();
             mChildView.layout(left, top, right, bottom);
+
+            bringChildToFront(mChildView);
         }
     }
 
@@ -286,7 +288,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             //如果手指还没放开就不能开始上升的动画
             if (!isOnTouch)
             {
-
                 if (offsetY != 0)
                 {
                     mFinshAndBack.setIntValues((int) offsetY, 0);
@@ -312,7 +313,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             mHeaderView.onFailRefresh();
             if (!isOnTouch)
             {
-
                 if (offsetY != 0)
                 {
                     mFinshAndBack.setIntValues((int) offsetY, 0);
@@ -331,6 +331,8 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         // TODO: 2016/4/19 0019 逻辑太长，待分解
         if (mHeaderView == null)
             return super.dispatchTouchEvent(ev);
+
+
         //如果刷新时不可以再拉动头部
         if (isRefreshing && !canScrollWhenRefreshing)
             return super.dispatchTouchEvent(ev);
@@ -338,16 +340,15 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         switch (ev.getAction())
         {
             case MotionEvent.ACTION_DOWN:
-                if (isOnTouch)
-                    break;
-                else
+                if (!isOnTouch)
                 {
                     cancelAnimIfNeed();
                     startY = ev.getY();
                     isOnTouch = true;
                     mHasSendCancel = false;
-                    break;
+                    super.dispatchTouchEvent(ev);
                 }
+                return true;//无论任何时候都要返回true，否则后续事件收不到
             case MotionEvent.ACTION_MOVE:
                 float curY = ev.getY();
                 if (canChildScrollUp())
@@ -357,6 +358,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                 //如果列表不可以再向上滑，则拦截事件
                 else
                 {
+                    Log.d("tag", "xxxxxxxxxxxxxxxxx");
                     //dy为滑动距离，被childview消费的不算
                     float dy = curY - startY;
                     //getNestedScrollAxes()
@@ -464,7 +466,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                         changeState(BaseHeaderView.HeaderState.release);
                         isRefreshing = true;
                         if (mRefreshLinstener != null)
-                            mRefreshLinstener.onRefreshingStart();
+                            mRefreshLinstener.onRefreshStart();
                     }
                     return true;
                 }
@@ -478,7 +480,9 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     }
 
 
-    /** 将内容和头部移动到指定的位置
+    /**
+     * 将内容和头部移动到指定的位置
+     *
      * @param to 偏移量，px
      */
     private void moveTo(float to)
@@ -499,7 +503,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             mHeaderView.startRefresh();
 
             if (mRefreshLinstener != null)
-                mRefreshLinstener.onRefreshingStart();
+                mRefreshLinstener.onRefreshStart();
 
 
             //如果开始刷新后需要立即返回到刷新高度的话
@@ -545,7 +549,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     private void cancelAnimIfNeed()
     {
-        if(mBackToTop.isRunning())
+        if (mBackToTop.isRunning())
             mBackToTop.cancel();
         if (mBackToRefreshing.isRunning())
             mBackToRefreshing.cancel();
@@ -578,7 +582,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     {
         //如果用户自己实现判断逻辑，则以用户的逻辑为准
         if (mCondition != null)
-            return mCondition.canScroll();
+            return mCondition.canScrollUp();
 
         if (mChildView == null)
             return true;
@@ -613,12 +617,12 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         mRefreshLinstener = refreshLinstener;
     }
 
-    public ScrollCondition getCondition()
+    public ScrollCondition getScrollableListener()
     {
         return mCondition;
     }
 
-    public void setCondition(ScrollCondition condition)
+    public void setScrollableListener(ScrollCondition condition)
     {
         mCondition = condition;
     }

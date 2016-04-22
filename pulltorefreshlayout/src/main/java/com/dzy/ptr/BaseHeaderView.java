@@ -94,7 +94,7 @@ public abstract class BaseHeaderView extends FrameLayout
         int height = MeasureSpec.getSize(heightMeasureSpec);
 
 //
-        Log.d("onmeasure", "headerview  width " + width + "   height " + height);
+        Log.d("baseheader", "headerview  width " + width + "   height " + height);
 //        setMeasuredDimension(width,getMeasuredHeight());
     }
 }

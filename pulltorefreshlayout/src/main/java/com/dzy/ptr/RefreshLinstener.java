@@ -6,5 +6,5 @@ package com.dzy.ptr;
  */
 public interface RefreshLinstener
 {
-    void onRefreshingStart();
+    void onRefreshStart();
 }
