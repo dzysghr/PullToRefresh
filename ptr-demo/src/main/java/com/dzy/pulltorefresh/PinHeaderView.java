@@ -1,8 +1,6 @@
 package com.dzy.pulltorefresh;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
@@ -14,10 +12,10 @@ import android.widget.TextView;
 import com.dzy.ptr.BaseHeaderView;
 
 /**
- *  经典下拉箭头header
- * Created by dzysg on 2016/4/16 0016.
+ *  这个是固定头部的例子
+ * Created by dzysg on 2016/4/23 0023.
  */
-public class ArrowHeaderView extends BaseHeaderView
+public class PinHeaderView extends BaseHeaderView
 {
 
     TextView mTV;
@@ -28,7 +26,10 @@ public class ArrowHeaderView extends BaseHeaderView
     private RotateAnimation mArrowUpAnim;
     private RotateAnimation mArrowDownAnim;
     private HeaderState mLastState = HeaderState.drag;
-    public ArrowHeaderView(Context context)
+
+
+
+    public PinHeaderView(Context context)
     {
         super(context);
     }
@@ -36,8 +37,7 @@ public class ArrowHeaderView extends BaseHeaderView
     @Override
     public void init(Context context)
     {
-
-        View v = LayoutInflater.from(context).inflate(R.layout.headerlayout,this);
+        View v = LayoutInflater.from(context).inflate(R.layout.pinheaderlayout,this);
         mTV = (TextView) v.findViewById(R.id.tv);
         mPb = (ProgressBar) v.findViewById(R.id.pb);
         mImageView = (ImageView) v.findViewById(R.id.iv_arrow);
@@ -55,7 +55,6 @@ public class ArrowHeaderView extends BaseHeaderView
         mArrowDownAnim.setFillAfter(true);
     }
 
-
     @Override
     public int getMaxHeight()
     {
@@ -71,7 +70,7 @@ public class ArrowHeaderView extends BaseHeaderView
     @Override
     public int getRefreshingHeight()
     {
-        return (int) getContext().getResources().getDisplayMetrics().density * 60;
+        return (int) getContext().getResources().getDisplayMetrics().density * 80;
     }
 
     @Override
@@ -120,8 +119,6 @@ public class ArrowHeaderView extends BaseHeaderView
 
         }
         mLastState = state;
-        Log.d("stateChange", state.toString());
-        //requestLayout();
     }
 
     @Override
@@ -145,23 +142,6 @@ public class ArrowHeaderView extends BaseHeaderView
     @Override
     public void onPositionChange(float offset)
     {
-        //requestLayout();
-        //Log.d("tag", "offset " + offset);
-    }
 
-    @Override
-    protected void onDraw(Canvas canvas)
-    {
-        super.onDraw(canvas);
-        Log.i("tag", "ondraw from ArrowHeaderView");
-        //canvas.drawColor(0xFFFFa112);
     }
-
-    @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom)
-    {
-        super.onLayout(changed, left, top, right, bottom);
-        Log.i("tag", "onLayout from ArrowHeaderView");
-    }
-
 }

@@ -18,9 +18,10 @@ import android.widget.TextView;
 import com.dzy.ptr.BaseHeaderView;
 
 /**
+ *
  * Created by dzysg on 2016/4/17 0017.
  */
-public class CircleHeaderView extends BaseHeaderView
+public class DropWaterHeader extends BaseHeaderView
 {
 
     int BigRadius = 30;
@@ -36,7 +37,7 @@ public class CircleHeaderView extends BaseHeaderView
     ProgressBar mPb;
     TextView mTv;
 
-    public CircleHeaderView(Context context)
+    public DropWaterHeader(Context context)
     {
         super(context);
     }
@@ -103,6 +104,7 @@ public class CircleHeaderView extends BaseHeaderView
             mPb.setVisibility(View.INVISIBLE);
             mTv.setVisibility(View.INVISIBLE);
         }
+
     }
 
     @Override
@@ -146,8 +148,9 @@ public class CircleHeaderView extends BaseHeaderView
             mState = 0;
         else
             mState = 1;
-        invalidate();
 
+
+        invalidate();
     }
 
     @Override

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="120dp">
+
+    <ImageView
+        android:layout_marginTop="10dp"
+        android:id="@+id/iv_arrow"
+        android:src="@drawable/arrow"
+        android:layout_width="40dp"
+        android:layout_centerHorizontal="true"
+        android:layout_height="50dp"/>
+
+    <TextView
+        android:layout_marginTop="65dp"
+        android:id="@+id/tv"
+        android:textSize="16sp"
+        android:text="下拉刷新"
+        android:gravity="center_horizontal"
+        android:layout_centerHorizontal="true"
+        android:layout_width="80dp"
+        android:layout_height="20dp"/>
+
+    <ProgressBar
+        android:layout_marginTop="20dp"
+        android:id="@+id/pb"
+        android:layout_centerHorizontal="true"
+        android:layout_width="40dp"
+        android:layout_height="40dp"/>
+
+</RelativeLayout>
