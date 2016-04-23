@@ -136,7 +136,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         mHeaderView = header;
         LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         params.gravity = Gravity.TOP;
-        params.height = mHeaderView.getMaxHeight();
+        //params.height = mHeaderView.getMaxHeight();
         mHeaderView.setLayoutParams(params);
 
         mHeaderHeight = mHeaderView.getMaxHeight();
@@ -175,12 +175,14 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                 top = paddingTop;
             } else
             {
-                top = paddingTop + (int) offsetY - mHeaderHeight;
+                top = paddingTop + (int) offsetY - mHeaderView.getMeasuredHeight();
             }
             right = left + mHeaderView.getMeasuredWidth();
             bottom = top + mHeaderView.getMeasuredHeight();
 
             Log.d("onLayout", "left " + left + " top " + top + " right " + right + " bottom " + bottom);
+            Log.d("onLayout", "header view getMeasuredWidth "+mHeaderView.getMeasuredHeight());
+
             mHeaderView.layout(left, top, right, bottom);
 
         }

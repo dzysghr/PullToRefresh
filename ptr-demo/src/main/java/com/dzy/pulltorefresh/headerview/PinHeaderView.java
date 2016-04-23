@@ -1,4 +1,4 @@
-package com.dzy.pulltorefresh;
+package com.dzy.pulltorefresh.headerview;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -10,6 +10,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.dzy.ptr.BaseHeaderView;
+import com.dzy.pulltorefresh.R;
 
 /**
  *  这个是固定头部的例子

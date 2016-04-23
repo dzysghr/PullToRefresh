@@ -7,7 +7,7 @@ package com.dzy.ptr;
 
 public class Log
 {
-    static public boolean enable = false;
+    static public boolean enable = true;
     static public String Tag = "ptr";
 
     public static void d(String tag,String msg)

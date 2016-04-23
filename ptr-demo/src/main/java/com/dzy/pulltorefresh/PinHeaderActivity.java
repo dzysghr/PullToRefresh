@@ -7,6 +7,7 @@ import android.support.v7.widget.RecyclerView;
 
 import com.dzy.ptr.PullToRefreshLayout;
 import com.dzy.ptr.RefreshLinstener;
+import com.dzy.pulltorefresh.headerview.PinHeaderView;
 
 public class PinHeaderActivity extends AppCompatActivity
 {

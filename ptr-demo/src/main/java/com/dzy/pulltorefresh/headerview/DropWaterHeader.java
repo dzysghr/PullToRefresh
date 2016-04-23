@@ -1,4 +1,4 @@
-package com.dzy.pulltorefresh;
+package com.dzy.pulltorefresh.headerview;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -18,7 +18,7 @@ import android.widget.TextView;
 import com.dzy.ptr.BaseHeaderView;
 
 /**
- *
+ * 这个水滴刷新效果不是很完善，代码写得比较乱
  * Created by dzysg on 2016/4/17 0017.
  */
 public class DropWaterHeader extends BaseHeaderView
@@ -154,6 +154,14 @@ public class DropWaterHeader extends BaseHeaderView
     }
 
     @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
+    {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        int widht = MeasureSpec.getSize(widthMeasureSpec);
+        setMeasuredDimension(widht,getMaxHeight());
+    }
+
+    @Override
     protected void onDraw(Canvas canvas)
     {
         super.onDraw(canvas);
@@ -269,18 +277,6 @@ public class DropWaterHeader extends BaseHeaderView
         canvas.drawCircle(getMeasuredWidth() / 2, curSmallY, curSmallRadius, p);
     }
 
-    private void drawRefreshing(Canvas canvas)
-    {
-        canvas.save();
 
-
-
-        float cx = getMeasuredWidth() / 2;
-        curBigY = getMaxHeight() - mOffset + BigCircleMargin + BigRadius;
-        canvas.drawCircle(cx, curBigY, curBigRadius, p);
-
-
-
-    }
 
 }

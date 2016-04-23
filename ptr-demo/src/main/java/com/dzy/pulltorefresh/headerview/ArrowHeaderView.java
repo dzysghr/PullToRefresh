@@ -1,4 +1,4 @@
-package com.dzy.pulltorefresh;
+package com.dzy.pulltorefresh.headerview;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -12,6 +12,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.dzy.ptr.BaseHeaderView;
+import com.dzy.pulltorefresh.R;
 
 /**
  *  经典下拉箭头header
