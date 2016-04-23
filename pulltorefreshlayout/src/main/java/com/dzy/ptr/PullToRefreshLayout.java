@@ -28,12 +28,11 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     View mChildView;
     BaseHeaderView mHeaderView;
 
-
     //实现
-    //超过刷新线马上刷新
-    public boolean mRefreshImmediately = true;
+    //超过刷新线马上刷新，比如 QQ
+    public boolean mRefreshImmediately = false;
 
-    // TODO: 2016/4/21 0021 考虑到代码复杂度、功能实用性，未实现
+    // TODO: 2016/4/21 0021 考虑到功能实用性，未实现
     //开始刷新后不等松手马上回到刷新高度
     public boolean mUpToRefredshingImmediately = false;
 
@@ -45,11 +44,17 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     //如果正在刷新的时候也可以拉动
     public boolean canScrollWhenRefreshing = true;
 
+    // TODO: 2016/4/22 0022 刷新完成马上升到顶部 ，网易新闻
+    public boolean mBackToTopWhenFinish = false;
 
-    //内容向下偏移，头部固定逐渐显示
+    // TODO: 2016/4/22 0022 刷新时不显示头部，微信朋友圈
+    public boolean mBackToTopWhenRefresh = false;
+
+
+    //实现，内容向下偏移，头部固定逐渐显示
     public boolean mPinHeader = false;
 
-    //内容固定，头部向下偏移，显示在内容上层
+    //实现，内容固定，头部向下偏移，显示在内容上层
     public boolean mPinContent = false;
 
 
@@ -58,8 +63,11 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     private ScrollCondition mCondition;
 
+    //header高度
     private int mHeaderHeight;
+    //正在刷新时的高度
     private int mRefreshingHeight;
+    //下拉时触发刷新的高度
     private int mThresholdHeight;
 
     //是否正在刷新
@@ -71,11 +79,14 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     //手指是否还在屏幕上
     private boolean isOnTouch = false;
 
-
     private float startY;
 
     //lastPos 是最近一次抬手或者动画完成时的ChildView的偏移量
     private float LastPos = 0;
+
+    //当前偏移量
+    private float offsetY;
+
 
 
     private boolean mHasSendCancel = false;
@@ -87,8 +98,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     private DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator(2);
 
-
-    private float offsetY;
 
 
     public PullToRefreshLayout(Context context)
@@ -190,7 +199,8 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             bottom = top + mChildView.getMeasuredHeight();
             mChildView.layout(left, top, right, bottom);
 
-            bringChildToFront(mChildView);
+            if (mPinHeader)
+                bringChildToFront(mChildView);
         }
     }
 
@@ -358,7 +368,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                 //如果列表不可以再向上滑，则拦截事件
                 else
                 {
-                    Log.d("tag", "xxxxxxxxxxxxxxxxx");
+
                     //dy为滑动距离，被childview消费的不算
                     float dy = curY - startY;
                     //getNestedScrollAxes()

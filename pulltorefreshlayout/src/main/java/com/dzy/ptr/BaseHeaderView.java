@@ -80,8 +80,8 @@ public abstract class BaseHeaderView extends FrameLayout
 
 
     /**
-     * 当位置变化时此方法会被PullToRefreshLayout调用，可以通过这个偏移量和当前的状态来决定动画的样子
-     * @param offset 位置偏移量，当下拉时从 0 到 MaxHeight,上升反之
+     * 发生拖拽时时此方法会被PullToRefreshLayout调用，可以通过这个偏移量和当前的状态来决定动画的样子
+     * @param offset 当头部不固定时表示位置偏移量，当头部内容固定时表示头部露出的高度，范围为下拉时从 0 到 MaxHeight,上升反之。
      */
     public abstract void onPositionChange(float offset);
 
@@ -93,8 +93,8 @@ public abstract class BaseHeaderView extends FrameLayout
         int width =MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
 
-//
-        Log.d("baseheader", "headerview  width " + width + "   height " + height);
-//        setMeasuredDimension(width,getMeasuredHeight());
+
+        Log.d("BaseHeader", "BaseHeader onMeasure  width " + width + "   height " + height);
+
     }
 }
