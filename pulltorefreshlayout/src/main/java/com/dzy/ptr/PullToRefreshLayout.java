@@ -7,7 +7,6 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
 import android.util.AttributeSet;
-import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -135,15 +134,15 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
         mHeaderView = header;
         LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        params.gravity = Gravity.TOP;
-        //params.height = mHeaderView.getMaxHeight();
+
         mHeaderView.setLayoutParams(params);
 
-        mHeaderHeight = mHeaderView.getMaxHeight();
+        //即将取消getMaxHeight方法
+        //mHeaderHeight = mHeaderView.getMaxHeight();
         mRefreshingHeight = mHeaderView.getRefreshingHeight();
         mThresholdHeight = mHeaderView.getThresholdHeight();
 
-        Log.d("tag", "MaxHeight " + mHeaderHeight + " refreshHeight : " + mRefreshingHeight + " ThresholdHeight :" + mThresholdHeight);
+        //Log.d("tag", "MaxHeight " + mHeaderHeight + " refreshHeight : " + mRefreshingHeight + " ThresholdHeight :" + mThresholdHeight);
 
 
         addView(mHeaderView);
@@ -184,6 +183,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             Log.d("onLayout", "header view getMeasuredWidth "+mHeaderView.getMeasuredHeight());
 
             mHeaderView.layout(left, top, right, bottom);
+            mHeaderHeight = mHeaderView.getMeasuredHeight();
 
         }
 

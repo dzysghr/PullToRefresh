@@ -36,11 +36,6 @@ public abstract class BaseHeaderView extends FrameLayout
     public abstract void init(Context context);
 
 
-    /** 返回头部能下拉的最大高度,单位px
-     * @return 返回头部能下拉的最大高度
-     */
-    public abstract int getMaxHeight();
-
 
     /** 触发刷新的下拉高度,单位px
      * @return 触发刷新的下拉高度

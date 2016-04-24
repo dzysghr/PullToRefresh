@@ -58,12 +58,6 @@ public class ArrowHeaderView extends BaseHeaderView
 
 
     @Override
-    public int getMaxHeight()
-    {
-        return (int) getContext().getResources().getDisplayMetrics().density * 120;
-    }
-
-    @Override
     public int getThresholdHeight()
     {
         return (int) getContext().getResources().getDisplayMetrics().density * 100;

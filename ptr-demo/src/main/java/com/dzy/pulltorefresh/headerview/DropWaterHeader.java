@@ -1,8 +1,5 @@
 package com.dzy.pulltorefresh.headerview;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -50,19 +47,18 @@ public class DropWaterHeader extends BaseHeaderView
         p.setColor(Color.GRAY);
         p.setAntiAlias(true);
         mPb = new ProgressBar(getContext());
-        LayoutParams params = new LayoutParams(60,60);
+        LayoutParams params = new LayoutParams(60, 60);
         params.bottomMargin = 10;
-        params.gravity = Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL;
+        params.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
 
         mTv = new TextView(getContext());
         LayoutParams textparams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         textparams.bottomMargin = 10;
-        textparams.gravity = Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL;
+        textparams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
         mTv.setTextSize(12);
 
-
-        addView(mPb,params);
-        addView(mTv,textparams);
+        addView(mPb, params);
+        addView(mTv, textparams);
 
 
         mTv.setVisibility(View.INVISIBLE);
@@ -70,7 +66,7 @@ public class DropWaterHeader extends BaseHeaderView
     }
 
 
-    @Override
+
     public int getMaxHeight()
     {
         return 200;
@@ -85,7 +81,7 @@ public class DropWaterHeader extends BaseHeaderView
     @Override
     public int getRefreshingHeight()
     {
-        return (int)(2*(BigRadius+BigCircleMargin));
+        return (int) (2 * (BigRadius + BigCircleMargin));
     }
 
 
@@ -99,7 +95,7 @@ public class DropWaterHeader extends BaseHeaderView
         }
         Log.d("state", "statechange  " + mHeaderState.toString());
 
-        if (mHeaderState==HeaderState.hide)
+        if (mHeaderState == HeaderState.hide)
         {
             mPb.setVisibility(View.INVISIBLE);
             mTv.setVisibility(View.INVISIBLE);
@@ -144,7 +140,7 @@ public class DropWaterHeader extends BaseHeaderView
         Log.i("tag", "offset " + offset);
 
         mOffset = offset;
-        if (mOffset <= 2*(BigRadius+BigCircleMargin))
+        if (mOffset <= 2 * (BigRadius + BigCircleMargin))
             mState = 0;
         else
             mState = 1;
@@ -158,7 +154,7 @@ public class DropWaterHeader extends BaseHeaderView
     {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         int widht = MeasureSpec.getSize(widthMeasureSpec);
-        setMeasuredDimension(widht,getMaxHeight());
+        setMeasuredDimension(widht, getMaxHeight());
     }
 
     @Override
@@ -177,49 +173,22 @@ public class DropWaterHeader extends BaseHeaderView
                 drawDragSmall(canvas);
                 drawLine(canvas);
             }
-        } else if (mHeaderState == HeaderState.refreshing)
-        {
-            if (isAnimatingBackToRefresh)
-            {
-                drawBig(canvas);
-                drawSmall(canvas);
-                drawLine(canvas);
-            }
         }
+        //        } else if (mHeaderState == HeaderState.refreshing)
+        //        {
+        //            if (isAnimatingBackToRefresh)
+        //            {
+        //                drawBig(canvas);
+        //                drawSmall(canvas);
+        //                drawLine(canvas);
+        //            }
+        //        }
 
     }
 
     private void StartBacktoRefresh()
     {
-        final float tempRadiusDe = curBigRadius - curSmallRadius;
-        final float deY = curSmallY - curBigY;
-
-        ValueAnimator anim = ValueAnimator.ofFloat(deY, 0);
-        anim.setDuration(100);
-        anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener()
-        {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation)
-            {
-                float val = (float) animation.getAnimatedValue();
-                curSmallY = curBigY + val;
-                curSmallRadius += 1;
-                curSmallRadius = Math.min(curBigRadius, curSmallRadius);
-                invalidate();
-            }
-        });
-        anim.addListener(new AnimatorListenerAdapter()
-        {
-            @Override
-            public void onAnimationEnd(Animator animation)
-            {
-                super.onAnimationEnd(animation);
-                isAnimatingBackToRefresh = false;
-                mPb.setVisibility(View.VISIBLE);
-            }
-        });
-        isAnimatingBackToRefresh = true;
-        anim.start();
+        mPb.setVisibility(View.VISIBLE);
     }
 
     private void drawLine(Canvas canvas)
@@ -276,7 +245,6 @@ public class DropWaterHeader extends BaseHeaderView
     {
         canvas.drawCircle(getMeasuredWidth() / 2, curSmallY, curSmallRadius, p);
     }
-
 
 
 }

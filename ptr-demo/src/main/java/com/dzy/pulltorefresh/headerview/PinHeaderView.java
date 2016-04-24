@@ -56,11 +56,6 @@ public class PinHeaderView extends BaseHeaderView
         mArrowDownAnim.setFillAfter(true);
     }
 
-    @Override
-    public int getMaxHeight()
-    {
-        return (int) getContext().getResources().getDisplayMetrics().density * 120;
-    }
 
     @Override
     public int getThresholdHeight()
