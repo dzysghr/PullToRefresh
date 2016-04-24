@@ -1,9 +1,7 @@
 package com.dzy.ptr;
 
 /**
- * 这是下拉布局的头部基类，继承这个类来自定义各种各样的头部动画
- * header会以width为Match_parent，height为Wrap_content的参数被加到ptrlayout
- * 如果需要自定义宽高，需要重写onMeasure
+ * 这是头部应该实现的接口，通过各个回调来调整header的动画
  * Created by dzysg on 2016/4/16 0016.
  */
 public interface HeaderController
@@ -57,5 +55,8 @@ public interface HeaderController
      * @param offset 当头部不固定时表示位置偏移量，当头部内容固定时表示头部露出的高度，范围为下拉时从 0 到 MaxHeight,上升反之。
      */
     void onPositionChange(float offset);
+
+
+
 
 }

@@ -29,7 +29,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     View mHeader;
 
 
-
     //实现
     //超过刷新线马上刷新，比如 QQ
     public boolean mRefreshImmediately = false;
@@ -46,8 +45,8 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     //如果正在刷新的时候也可以拉动
     public boolean canScrollWhenRefreshing = true;
 
-    // TODO: 2016/4/22 0022 刷新完成马上升到顶部 ，网易新闻
-    public boolean mBackToTopWhenFinish = false;
+    //实现，刷新完成不等松手马上升到顶部 ，网易新闻
+    public boolean mForceToTopWhenFinish = false;
 
     // TODO: 2016/4/22 0022 刷新时不显示头部，微信朋友圈
     public boolean mBackToTopWhenRefresh = false;
@@ -89,6 +88,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     //当前偏移量
     private float offsetY;
 
+    private MotionEvent mLastEvent;
 
 
     private boolean mHasSendCancel = false;
@@ -306,19 +306,24 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             isRefreshing = false;
             changeState(HeaderState.finish);
             mUIController.onSucceedRefresh();
-            //如果手指还没放开就不能开始上升的动画
-            if (!isOnTouch)
+
+            //如果是强制升回顶部
+            if (mForceToTopWhenFinish)
+            {
+                startY = mLastEvent.getY();
+                notityFinishAndBack();
+                return;
+            }
+            //手指还没放开就不能开始上升的动画
+            if(!isOnTouch)
             {
                 if (offsetY != 0)
                 {
-                    mFinishAndBack.setIntValues((int) offsetY, 0);
-                    mFinishAndBack.start();
+                    notityFinishAndBack();
                 } else
                     changeState(HeaderState.hide);
             }
-
         }
-
     }
 
     /**
@@ -332,16 +337,30 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             isRefreshing = false;
             changeState(HeaderState.fail);
             mUIController.onFailRefresh();
+
+            //如果是强制升回顶部
+            if (mForceToTopWhenFinish)
+            {
+                startY = mLastEvent.getY();
+                notityFinishAndBack();
+                return;
+            }
             if (!isOnTouch)
             {
                 if (offsetY != 0)
                 {
-                    mFinishAndBack.setIntValues((int) offsetY, 0);
-                    mFinishAndBack.start();
+                    notityFinishAndBack();
+
                 } else
                     changeState(HeaderState.hide);
             }
         }
+    }
+
+    public void notityFinishAndBack()
+    {
+        mFinishAndBack.setIntValues((int) offsetY, 0);
+        mFinishAndBack.start();
     }
 
 
@@ -371,6 +390,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                 }
                 return true;//无论任何时候都要返回true，否则后续事件收不到
             case MotionEvent.ACTION_MOVE:
+                mLastEvent = ev;
                 float curY = ev.getY();
                 if (canChildScrollUp())
                 {
