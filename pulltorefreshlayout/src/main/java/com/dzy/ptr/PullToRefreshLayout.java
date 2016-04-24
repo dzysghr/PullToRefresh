@@ -137,8 +137,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
         mHeaderView.setLayoutParams(params);
 
-        //即将取消getMaxHeight方法
-        //mHeaderHeight = mHeaderView.getMaxHeight();
         mRefreshingHeight = mHeaderView.getRefreshingHeight();
         mThresholdHeight = mHeaderView.getThresholdHeight();
 
@@ -147,6 +145,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
         addView(mHeaderView);
         setUpAnimation();
+
 
     }
 
@@ -183,8 +182,10 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             Log.d("onLayout", "header view getMeasuredWidth "+mHeaderView.getMeasuredHeight());
 
             mHeaderView.layout(left, top, right, bottom);
-            mHeaderHeight = mHeaderView.getMeasuredHeight();
 
+            mHeaderHeight = mHeaderView.getMeasuredHeight();
+            mThresholdHeight = mHeaderView.getThresholdHeight();
+            mRefreshingHeight = mHeaderView.getRefreshingHeight();
         }
 
         if (mChildView != null)
