@@ -9,16 +9,18 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.dzy.ptr.BaseHeaderView;
+import com.dzy.ptr.HeaderController;
+import com.dzy.ptr.HeaderState;
 
 /**
  * 这个水滴刷新效果不是很完善，代码写得比较乱
  * Created by dzysg on 2016/4/17 0017.
  */
-public class DropWaterHeader extends BaseHeaderView
+public class DropWaterHeader extends FrameLayout implements HeaderController
 {
 
     int BigRadius = 30;
@@ -37,10 +39,11 @@ public class DropWaterHeader extends BaseHeaderView
     public DropWaterHeader(Context context)
     {
         super(context);
+        setWillNotDraw(false);
+        init(context);
     }
 
 
-    @Override
     public void init(Context context)
     {
         p = new Paint();

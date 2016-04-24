@@ -7,18 +7,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.dzy.ptr.BaseHeaderView;
+import com.dzy.ptr.HeaderController;
+import com.dzy.ptr.HeaderState;
 import com.dzy.pulltorefresh.R;
 
 /**
  *  经典下拉箭头header
  * Created by dzysg on 2016/4/16 0016.
  */
-public class ArrowHeaderView extends BaseHeaderView
+public class ArrowHeaderView extends FrameLayout implements HeaderController
 {
 
     TextView mTV;
@@ -32,9 +34,10 @@ public class ArrowHeaderView extends BaseHeaderView
     public ArrowHeaderView(Context context)
     {
         super(context);
+        init(context);
     }
 
-    @Override
+
     public void init(Context context)
     {
 

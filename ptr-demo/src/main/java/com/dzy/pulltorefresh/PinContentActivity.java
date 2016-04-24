@@ -2,7 +2,7 @@ package com.dzy.pulltorefresh;
 
 import android.os.Bundle;
 
-import com.dzy.pulltorefresh.headerview.ArrowHeaderView;
+import com.dzy.pulltorefresh.headerview.MaterialHeader;
 
 public class PinContentActivity extends BaseActivity
 {
@@ -13,7 +13,7 @@ public class PinContentActivity extends BaseActivity
         super.onCreate(savedInstanceState);
 
         mLayout.mPinContent = true;
-        mLayout.setHeaderView(new ArrowHeaderView(this));
+        mLayout.setHeader(new MaterialHeader(this));
 
     }
 }

@@ -5,24 +5,25 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.dzy.ptr.BaseHeaderView;
+import com.dzy.ptr.HeaderController;
+import com.dzy.ptr.HeaderState;
 import com.dzy.pulltorefresh.R;
 
 /**
  *  这个是固定头部的例子
  * Created by dzysg on 2016/4/23 0023.
  */
-public class PinHeaderView extends BaseHeaderView
+public class PinHeaderView extends FrameLayout implements HeaderController
 {
 
     TextView mTV;
     ProgressBar mPb;
     ImageView mImageView;
-
 
     private RotateAnimation mArrowUpAnim;
     private RotateAnimation mArrowDownAnim;
@@ -33,9 +34,9 @@ public class PinHeaderView extends BaseHeaderView
     public PinHeaderView(Context context)
     {
         super(context);
+        init(context);
     }
 
-    @Override
     public void init(Context context)
     {
         View v = LayoutInflater.from(context).inflate(R.layout.pinheaderlayout,this);

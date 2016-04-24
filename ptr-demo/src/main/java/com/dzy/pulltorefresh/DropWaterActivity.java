@@ -12,6 +12,6 @@ public class DropWaterActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         mLayout.mRefreshImmediately = true;
-        mLayout.setHeaderView(new DropWaterHeader(this));
+        mLayout.setHeader(new DropWaterHeader(this));
     }
 }

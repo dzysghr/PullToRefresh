@@ -25,7 +25,10 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     // TODO: 2016/4/19 0019 未向外部暴露各个接口
 
     View mChildView;
-    BaseHeaderView mHeaderView;
+    HeaderController mUIController;
+    View mHeader;
+
+
 
     //实现
     //超过刷新线马上刷新，比如 QQ
@@ -92,11 +95,9 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     private ValueAnimator mBackToTop;
     private ValueAnimator mBackToRefreshing;
-    private ValueAnimator mFinshAndBack;
-    private BaseHeaderView.HeaderState mHeaderState;
-
+    private ValueAnimator mFinishAndBack;
+    private HeaderState mHeaderState;
     private DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator(2);
-
 
 
     public PullToRefreshLayout(Context context)
@@ -122,33 +123,40 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     /**
      * 设置头部
-     *
-     * @param header {@link BaseHeaderView} BaseHeaderView
+     * @param header  应该实现{@link HeaderController}
      */
-    public void setHeaderView(BaseHeaderView header)
+    public void setHeader(View header)
     {
         if (header == null)
             return;
-        if (mHeaderView != null)
+        if (mHeader != null)
             throw new IllegalArgumentException("you can only set Headerview one time");
 
-        mHeaderView = header;
+        mHeader = header;
         LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        mHeader.setLayoutParams(params);
 
-        mHeaderView.setLayoutParams(params);
+        if (header instanceof HeaderController)
+            mUIController = (HeaderController) header;
+        else
+        {
+            throw new IllegalArgumentException("the headerview should implement HeaderController interface");
+        }
 
-        mRefreshingHeight = mHeaderView.getRefreshingHeight();
-        mThresholdHeight = mHeaderView.getThresholdHeight();
+        mRefreshingHeight = mUIController.getRefreshingHeight();
+        mThresholdHeight = mUIController.getThresholdHeight();
 
         //Log.d("tag", "MaxHeight " + mHeaderHeight + " refreshHeight : " + mRefreshingHeight + " ThresholdHeight :" + mThresholdHeight);
-
-
-        addView(mHeaderView);
+        addView(mHeader);
         setUpAnimation();
-
-
     }
 
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
+    {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        android.util.Log.e("tag", "onMeasure");
+    }
 
     @Override
     protected void onLayout(boolean flag, int i, int j, int k, int l)
@@ -164,7 +172,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         int right = 0;
         int bottom = 0;
         int left = paddingLeft;
-        if (mHeaderView != null)
+        if (mUIController != null)
         {
 
             //如果header是固定模式
@@ -173,19 +181,19 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                 top = paddingTop;
             } else
             {
-                top = paddingTop + (int) offsetY - mHeaderView.getMeasuredHeight();
+                top = paddingTop + (int) offsetY - mHeader.getMeasuredHeight();
             }
-            right = left + mHeaderView.getMeasuredWidth();
-            bottom = top + mHeaderView.getMeasuredHeight();
+            right = left + mHeader.getMeasuredWidth();
+            bottom = top + mHeader.getMeasuredHeight();
 
             Log.d("onLayout", "left " + left + " top " + top + " right " + right + " bottom " + bottom);
-            Log.d("onLayout", "header view getMeasuredWidth "+mHeaderView.getMeasuredHeight());
+            Log.d("onLayout", "header view getMeasuredWidth "+ mHeader.getMeasuredHeight());
 
-            mHeaderView.layout(left, top, right, bottom);
+            mHeader.layout(left, top, right, bottom);
 
-            mHeaderHeight = mHeaderView.getMeasuredHeight();
-            mThresholdHeight = mHeaderView.getThresholdHeight();
-            mRefreshingHeight = mHeaderView.getRefreshingHeight();
+            mHeaderHeight = mHeader.getMeasuredHeight();
+            mThresholdHeight = mUIController.getThresholdHeight();
+            mRefreshingHeight = mUIController.getRefreshingHeight();
         }
 
         if (mChildView != null)
@@ -214,7 +222,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         super.onFinishInflate();
         for(int i = 0; i < getChildCount(); i++)
         {
-            if (getChildAt(i) instanceof BaseHeaderView)
+            if (getChildAt(i) instanceof HeaderController)
                 continue;
             mChildView = getChildAt(i);
         }
@@ -246,25 +254,25 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             {
                 super.onAnimationEnd(animation);
                 //上升到刷新高度后，开始通知header进行刷新动画
-                changeState(BaseHeaderView.HeaderState.refreshing);
-                mHeaderView.startRefresh();
+                changeState(HeaderState.refreshing);
+                mUIController.startRefresh();
             }
         });
 
 
         //这个是刷新完成后（无论成功失败），从正在刷新高度返回到顶部的隐藏动画，这个动画应该被headerview调用
-        mFinshAndBack = new ValueAnimator();
-        mFinshAndBack.setInterpolator(decelerateInterpolator);
-        mFinshAndBack.setDuration(600);
-        mFinshAndBack.addUpdateListener(this);
-        mFinshAndBack.addListener(new AnimatorListenerAdapter()
+        mFinishAndBack = new ValueAnimator();
+        mFinishAndBack.setInterpolator(decelerateInterpolator);
+        mFinishAndBack.setDuration(600);
+        mFinishAndBack.addUpdateListener(this);
+        mFinishAndBack.addListener(new AnimatorListenerAdapter()
         {
 
             @Override
             public void onAnimationEnd(Animator animation)
             {
                 super.onAnimationEnd(animation);
-                changeState(BaseHeaderView.HeaderState.hide);
+                changeState(HeaderState.hide);
                 isFinish = false;
             }
         });
@@ -296,17 +304,17 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         if (isRefreshing)
         {
             isRefreshing = false;
-            changeState(BaseHeaderView.HeaderState.finish);
-            mHeaderView.onSucceedRefresh();
+            changeState(HeaderState.finish);
+            mUIController.onSucceedRefresh();
             //如果手指还没放开就不能开始上升的动画
             if (!isOnTouch)
             {
                 if (offsetY != 0)
                 {
-                    mFinshAndBack.setIntValues((int) offsetY, 0);
-                    mFinshAndBack.start();
+                    mFinishAndBack.setIntValues((int) offsetY, 0);
+                    mFinishAndBack.start();
                 } else
-                    changeState(BaseHeaderView.HeaderState.hide);
+                    changeState(HeaderState.hide);
             }
 
         }
@@ -322,16 +330,16 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         if (isRefreshing)
         {
             isRefreshing = false;
-            changeState(BaseHeaderView.HeaderState.fail);
-            mHeaderView.onFailRefresh();
+            changeState(HeaderState.fail);
+            mUIController.onFailRefresh();
             if (!isOnTouch)
             {
                 if (offsetY != 0)
                 {
-                    mFinshAndBack.setIntValues((int) offsetY, 0);
-                    mFinshAndBack.start();
+                    mFinishAndBack.setIntValues((int) offsetY, 0);
+                    mFinishAndBack.start();
                 } else
-                    changeState(BaseHeaderView.HeaderState.hide);
+                    changeState(HeaderState.hide);
             }
         }
     }
@@ -342,7 +350,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     {
 
         // TODO: 2016/4/19 0019 逻辑太长，待分解
-        if (mHeaderView == null)
+        if (mUIController == null)
             return super.dispatchTouchEvent(ev);
 
 
@@ -432,11 +440,11 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
                 if (isFinish)
                 {
-                    mHeaderView.StateChange(BaseHeaderView.HeaderState.finish);
-                    mFinshAndBack.setIntValues((int) offsetY, 0);
-                    if (mFinshAndBack.isRunning())
-                        mFinshAndBack.cancel();
-                    mFinshAndBack.start();
+                    mUIController.StateChange(HeaderState.finish);
+                    mFinishAndBack.setIntValues((int) offsetY, 0);
+                    if (mFinishAndBack.isRunning())
+                        mFinishAndBack.cancel();
+                    mFinishAndBack.start();
                     return true;
                 }
 
@@ -447,7 +455,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                     //如果当前不是正在刷新，则回到顶部隐藏header
                     if (!isRefreshing)
                     {
-                        mHeaderView.StateChange(BaseHeaderView.HeaderState.drag);
+                        mUIController.StateChange(HeaderState.drag);
                         //自动升回顶部,隐藏
                         mBackToTop.setIntValues((int) offsetY, 0);
                         mBackToTop.start();
@@ -476,7 +484,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                     //如果当前不是正在刷新，则触发释放状态，触发刷新事件
                     if (!isRefreshing)
                     {
-                        changeState(BaseHeaderView.HeaderState.release);
+                        changeState(HeaderState.release);
                         isRefreshing = true;
                         if (mRefreshLinstener != null)
                             mRefreshLinstener.onRefreshStart();
@@ -512,8 +520,8 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         if (mRefreshImmediately && to > mThresholdHeight && !isFinish)
         {
             isRefreshing = true;
-            changeState(BaseHeaderView.HeaderState.refreshing);
-            mHeaderView.startRefresh();
+            changeState(HeaderState.refreshing);
+            mUIController.startRefresh();
 
             if (mRefreshLinstener != null)
                 mRefreshLinstener.onRefreshStart();
@@ -534,9 +542,9 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         {
             //如果超过刷新阈值
             if (to < mThresholdHeight)
-                changeState(BaseHeaderView.HeaderState.drag);
+                changeState(HeaderState.drag);
             else
-                changeState(BaseHeaderView.HeaderState.over);
+                changeState(HeaderState.over);
         }
     }
 
@@ -550,12 +558,12 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         if (change == 0)
             return;
         if (!mPinHeader)
-            mHeaderView.offsetTopAndBottom(change);
+            mHeader.offsetTopAndBottom(change);
 
         if (!mPinContent)
             mChildView.offsetTopAndBottom(change);
 
-        mHeaderView.onPositionChange(to);
+        mUIController.onPositionChange(to);
         invalidate();
         offsetY = offsetY + change;
     }
@@ -566,22 +574,20 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             mBackToTop.cancel();
         if (mBackToRefreshing.isRunning())
             mBackToRefreshing.cancel();
-        if (mFinshAndBack.isRunning())
-            mFinshAndBack.cancel();
-
+        if (mFinishAndBack.isRunning())
+            mFinishAndBack.cancel();
     }
-
 
     /**
      * 通知Header状态改变
      *
-     * @param state 状态枚举 {@link com.dzy.ptr.BaseHeaderView.HeaderState}
+     * @param state 状态枚举 {@link com.dzy.ptr.HeaderState}
      */
-    private void changeState(BaseHeaderView.HeaderState state)
+    private void changeState(HeaderState state)
     {
         if (mHeaderState != state)
         {
-            mHeaderView.StateChange(state);
+            mUIController.StateChange(state);
             mHeaderState = state;
         }
     }

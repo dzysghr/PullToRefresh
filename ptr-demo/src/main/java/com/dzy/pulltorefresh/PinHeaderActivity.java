@@ -28,7 +28,7 @@ public class PinHeaderActivity extends AppCompatActivity
 
         mLayout = (PullToRefreshLayout) findViewById(R.id.ptrlayout);
         mLayout.mPinHeader = true;
-        mLayout.setHeaderView(new PinHeaderView(this));
+        mLayout.setHeader(new PinHeaderView(this));
 
 
 
