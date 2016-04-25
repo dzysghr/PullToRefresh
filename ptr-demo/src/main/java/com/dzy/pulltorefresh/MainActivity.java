@@ -2,6 +2,7 @@ package com.dzy.pulltorefresh;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,7 +36,7 @@ public class MainActivity extends AppCompatActivity
         list.add("内容固定-MaterialStyle");
         list.add("刷新完成强制返回");
         list.add("刷新时隐藏头部");
-
+        list.add("viewPager");
         mLv.setAdapter(new CommenAdapter<String>(this, list)
         {
             @Override
@@ -65,6 +66,8 @@ public class MainActivity extends AppCompatActivity
                     startActivity(new Intent(MainActivity.this,ForceTopActivity.class));
                 else if (position==6)
                     startActivity(new Intent(MainActivity.this,HideHeaderActivity.class));
+                else if (position==7)
+                    startActivity(new Intent(MainActivity.this,ViewpagerActivity.class));
 
             }
         });

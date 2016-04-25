@@ -36,6 +36,6 @@ public class ForceTopActivity extends BaseActivity
                 mAdapter.notifyDataSetChanged();
                 mLayout.succeedRefresh();
             }
-        },3000);
+        },2000);
     }
 }

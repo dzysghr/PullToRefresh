@@ -31,6 +31,8 @@
         </activity>
         <activity android:name=".HideHeaderActivity">
         </activity>
+        <activity android:name=".ViewpagerActivity">
+        </activity>
     </application>
 
 </manifest>

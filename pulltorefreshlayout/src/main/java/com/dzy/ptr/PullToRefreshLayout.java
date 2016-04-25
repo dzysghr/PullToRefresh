@@ -6,6 +6,7 @@ import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
+import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -21,8 +22,10 @@ import android.widget.FrameLayout;
  */
 public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.AnimatorUpdateListener
 {
+
     // TODO: 2016/4/19 0019 增加自动刷新功能
     // TODO: 2016/4/25 0025 增加动画时间设置，下拉阻尼设置
+    // TODO: 2016/4/25 0025 横竖判定,参照SwipeRefreshLayout重构
 
     View mChildView;
     HeaderController mUIController;
@@ -91,6 +94,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     private MotionEvent mLastEvent;
 
+    private  int mTouchSlop;
 
     private boolean mHasSendCancel = false;
 
@@ -114,12 +118,16 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     public PullToRefreshLayout(Context context, AttributeSet attrs, int defStyleAttr)
     {
         super(context, attrs, defStyleAttr);
+        mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
+
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public PullToRefreshLayout(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes)
     {
         super(context, attrs, defStyleAttr, defStyleRes);
+
+        mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
     }
 
     /**
@@ -396,6 +404,10 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             case MotionEvent.ACTION_MOVE:
                 mLastEvent = ev;
                 float curY = ev.getY();
+                if (curY-startY<mTouchSlop)
+                {
+                    break;
+                }
 
                 //如果刷新完成时强制返回顶部且返回顶部的动画正在执行
                 if (mForceToTopWhenFinish && mFinishAndBack.isRunning())
@@ -648,19 +660,17 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         if (mChildView == null)
             return true;
 
-        if (android.os.Build.VERSION.SDK_INT < 14)
-        {
-            if (mChildView instanceof AbsListView)
-            {
+        if (android.os.Build.VERSION.SDK_INT < 14) {
+            if (mChildView instanceof AbsListView) {
                 final AbsListView absListView = (AbsListView) mChildView;
-                return absListView.getChildCount() > 0 && (absListView.getFirstVisiblePosition() > 0 || absListView.getChildAt(0).getTop() < absListView.getPaddingTop());
-            } else
-            {
-                return mChildView.getScrollY() > 0;
+                return absListView.getChildCount() > 0
+                        && (absListView.getFirstVisiblePosition() > 0 || absListView.getChildAt(0)
+                        .getTop() < absListView.getPaddingTop());
+            } else {
+                return ViewCompat.canScrollVertically(mChildView, -1) || mChildView.getScrollY() > 0;
             }
-        } else
-        {
-            return mChildView.canScrollVertically(-1);
+        } else {
+            return ViewCompat.canScrollVertically(mChildView, -1);
         }
     }
 
