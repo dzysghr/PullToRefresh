@@ -24,11 +24,9 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     // TODO: 2016/4/19 0019 增加自动刷新功能
     // TODO: 2016/4/25 0025 增加动画时间设置，下拉阻尼设置
 
-
     View mChildView;
     HeaderController mUIController;
     View mHeader;
-
 
     //实现
     //超过刷新线马上刷新，比如 QQ
@@ -612,11 +610,12 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     private void cancelAnimIfNeed()
     {
+
         if (mBackToTop.isRunning())
             mBackToTop.cancel();
         if (mBackToRefreshing.isRunning())
             mBackToRefreshing.cancel();
-        if (mFinishAndBack.isRunning())
+        if (!mForceToTopWhenFinish&&mFinishAndBack.isRunning())
             mFinishAndBack.cancel();
     }
 
