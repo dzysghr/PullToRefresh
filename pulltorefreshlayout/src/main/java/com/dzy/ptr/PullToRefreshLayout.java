@@ -22,8 +22,7 @@ import android.widget.FrameLayout;
 public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.AnimatorUpdateListener
 {
     // TODO: 2016/4/19 0019 增加自动刷新功能
-    // TODO: 2016/4/19 0019 未向外部暴露各个接口
-    // TODO: 2016/4/24 0024 增加header控制完成上升动画接口
+    // TODO: 2016/4/24 0024 增加header控制完成上升动画接口，实现没验证
 
     View mChildView;
     HeaderController mUIController;
@@ -32,37 +31,37 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     //实现
     //超过刷新线马上刷新，比如 QQ
-    public boolean mRefreshImmediately = false;
+    private boolean mRefreshImmediately = false;
 
     // TODO: 2016/4/21 0021 考虑到功能实用性，未实现
     //开始刷新后不等松手马上回到刷新高度
-    public boolean mUpToRefredshingImmediately = false;
+    private boolean mUpToRefredshingImmediately = false;
+
+    // TODO: 2016/4/22 0022 刷新时不显示头部，微信朋友圈
+    private boolean mBackToTopWhenRefresh = false;
 
     //实现
     //下拉是否可以超过Header的高度
-    public boolean canOverTheHeaderHeight = false;
+    private boolean canOverTheHeaderHeight = false;
 
     //实现
     //如果正在刷新的时候也可以拉动
-    public boolean canScrollWhenRefreshing = true;
+    private boolean canScrollWhenRefreshing = true;
 
     //实现，刷新完成不等松手马上升到顶部 ，网易新闻
-    public boolean mForceToTopWhenFinish = false;
+    private boolean mForceToTopWhenFinish = false;
 
-    // TODO: 2016/4/22 0022 刷新时不显示头部，微信朋友圈
-    public boolean mBackToTopWhenRefresh = false;
 
 
     //当这个为true时，刷新完成上升的动画不会自动调用，需要外部手动调用notityFinishAndBack
-    //来隐藏头部，因为有时需要让header刷新成功的动画播放完才执行上升，与mForceToTopWhenFinish冲突
-    //不能同时为true
-    public boolean mHandleToTopAnim = false;
+    //来隐藏头部，因为有时需要让header刷新成功的动画播放完才执行上升，与mForceToTopWhenFinish冲突，不能同时为true
+    private boolean mHandleToTopAnim = false;
 
     //实现，内容向下偏移，头部固定逐渐显示
-    public boolean mPinHeader = false;
+    private boolean mPinHeader = false;
 
     //实现，内容固定，头部向下偏移，显示在内容上层
-    public boolean mPinContent = false;
+    private boolean mPinContent = false;
 
 
     //刷新回调，当刷新发生时会回调该接口
@@ -366,7 +365,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         {
             mFinishAndBack.setIntValues((int) offsetY, 0);
             mFinishAndBack.start();
-
         } else
             notifyStateChange(HeaderState.hide);
     }
@@ -463,9 +461,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 isOnTouch = false;
-
                 LastPos = offsetY;
-                //Log.d("tag", "ACTION_CANCEL or UP, offsetY= "+offsetY);
 
                 //如果header已经完全隐藏了，则由子view去处理action_up和cancel事件
                 if (offsetY <= 0)
@@ -473,7 +469,8 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
                 if (isFinish)
                 {
-                    mUIController.StateChange(HeaderState.finish);
+
+                    //mUIController.StateChange(HeaderState.finish);
                     mFinishAndBack.setIntValues((int) offsetY, 0);
                     if (mFinishAndBack.isRunning())
                         mFinishAndBack.cancel();
@@ -668,6 +665,9 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         return mRefreshLinstener;
     }
 
+    /** 刷新回调，当开始刷新时会调用该接口
+     * @param refreshLinstener 回调接口
+     */
     public void setRefreshLinstener(RefreshLinstener refreshLinstener)
     {
         mRefreshLinstener = refreshLinstener;
@@ -681,5 +681,102 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     public void setScrollableListener(ScrollCondition condition)
     {
         mCondition = condition;
+    }
+
+
+    /** 是否超过刷新线立即刷新，默认为false
+     * @param refreshImmediately 是否超过刷新线立即刷新
+     */
+    public void setRefreshImmediately(boolean refreshImmediately)
+    {
+        mRefreshImmediately = refreshImmediately;
+    }
+
+    /** 开始刷新后不等松手马上回到刷新高度，默认为false
+     * @param upToRefredshingImmediately 是否开启
+     */
+    // TODO: 2016/4/25 0025 没实现
+    private void setUpToRefredshingImmediately(boolean upToRefredshingImmediately)
+    {
+        mUpToRefredshingImmediately = upToRefredshingImmediately;
+    }
+
+
+    /** 下拉是否可以超过Header的高度，默认为false
+     * @param canOverTheHeaderHeight 下拉是否可以超过Header的高度
+     */
+    public void setCanOverTheHeaderHeight(boolean canOverTheHeaderHeight)
+    {
+        this.canOverTheHeaderHeight = canOverTheHeaderHeight;
+    }
+
+
+    /** 正在刷新的时候也可以拉动,默认为true
+     * @param canScrollWhenRefreshing 是否开启
+     */
+    public void setCanScrollWhenRefreshing(boolean canScrollWhenRefreshing)
+    {
+        this.canScrollWhenRefreshing = canScrollWhenRefreshing;
+    }
+
+    /** 刷新完成不等松手马上升到顶部，默认为false,与{@link PullToRefreshLayout#setHandleToTopAnim(boolean)} 冲突
+     *  不能同时为true，当其中一个为true时,另外一个自动设为false
+     * @param forceToTopWhenFinish 是否开启
+     */
+    public void setForceToTopWhenFinish(boolean forceToTopWhenFinish)
+    {
+        mForceToTopWhenFinish = forceToTopWhenFinish;
+        if (forceToTopWhenFinish)
+            mHandleToTopAnim = false;
+    }
+
+
+    /** 是否由外部控制刷新完成后上升回顶部的动画，默认为false。当这个为true时，刷新完成后header不会自动上升回顶部，需要手动
+     * 调用 {@link PullToRefreshLayout#notityFinishAndBack()}
+     * 因为有时需要让header刷新成功的动画播放完才执行上升，与ForceToTopWhenFinish冲突，不能同时为true，当其中一个为true时,另外
+     * 一个自动设为false
+     * @param handleToTopAnim 是否开启
+     */
+    public void setHandleToTopAnim(boolean handleToTopAnim)
+    {
+        mHandleToTopAnim = handleToTopAnim;
+        if (handleToTopAnim)
+            mForceToTopWhenFinish = false;
+    }
+
+    /** 刷新的时候不显示头部，默认为false
+     * @param backToTopWhenRefresh 是否开启
+     */
+    // TODO: 2016/4/25 0025 没实现
+    private void setBackToTopWhenRefresh(boolean backToTopWhenRefresh)
+    {
+        mBackToTopWhenRefresh = backToTopWhenRefresh;
+    }
+
+
+
+    /** 是否固定头部，默认为false
+     * @param pinHeader 是否固定头部
+     */
+    public void setPinHeader(boolean pinHeader)
+    {
+        mPinHeader = pinHeader;
+    }
+
+    /** 是否固定内容布局，默认为false
+     * @param pinContent 是否固定内容布局
+     */
+    public void setPinContent(boolean pinContent)
+    {
+        mPinContent = pinContent;
+    }
+
+
+    /** 手指是否还在屏幕上
+     * @return 手指是否还在屏幕上
+     */
+    public boolean isOnTouch()
+    {
+        return isOnTouch;
     }
 }

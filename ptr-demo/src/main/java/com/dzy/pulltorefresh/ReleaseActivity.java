@@ -12,9 +12,7 @@ public class ReleaseActivity extends BaseActivity
     {
         super.onCreate(savedInstanceState);
 
-
         mLayout.setHeader(new ArrowHeaderView(this));
-        mLayout.mRefreshImmediately = false;
-
+        mLayout.setRefreshImmediately(false);
     }
 }

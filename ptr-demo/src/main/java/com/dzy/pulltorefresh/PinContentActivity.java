@@ -12,7 +12,7 @@ public class PinContentActivity extends BaseActivity
     {
         super.onCreate(savedInstanceState);
 
-        mLayout.mPinContent = true;
+        mLayout.setPinContent(true);
         mLayout.setHeader(new MaterialHeader(this));
 
     }

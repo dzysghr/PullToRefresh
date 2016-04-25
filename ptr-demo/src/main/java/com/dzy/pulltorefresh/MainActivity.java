@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity
         list.add("超过刷新线刷新");
         list.add("水滴下拉");
         list.add("头部固定");
-        list.add("内容固定");
+        list.add("内容固定-MaterialStyle");
         list.add("刷新完成强制返回");
 
         mLv.setAdapter(new CommenAdapter<String>(this, list)

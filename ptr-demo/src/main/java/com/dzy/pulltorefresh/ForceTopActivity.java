@@ -13,8 +13,8 @@ public class ForceTopActivity extends BaseActivity
     {
         super.onCreate(savedInstanceState);
         mLayout.setHeader(new ArrowHeaderView(this));
-        mLayout.mRefreshImmediately = true;
-        mLayout.mForceToTopWhenFinish = true;
+        mLayout.setRefreshImmediately(true);
+        mLayout.setForceToTopWhenFinish(true);
         mLayout.setRefreshLinstener(new RefreshLinstener() {
             @Override
             public void onRefreshStart()

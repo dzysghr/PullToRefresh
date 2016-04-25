@@ -27,7 +27,7 @@ public class PinHeaderActivity extends AppCompatActivity
         mRecyclerView.setAdapter(new DefaultRecycleViewAdapter(this,null));
 
         mLayout = (PullToRefreshLayout) findViewById(R.id.ptrlayout);
-        mLayout.mPinHeader = true;
+        mLayout.setPinHeader(true);
         mLayout.setHeader(new PinHeaderView(this));
 
 

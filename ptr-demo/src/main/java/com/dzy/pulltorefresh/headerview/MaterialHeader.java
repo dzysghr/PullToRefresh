@@ -1,5 +1,7 @@
 package com.dzy.pulltorefresh.headerview;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -22,8 +24,8 @@ public class MaterialHeader extends View implements HeaderController
     MaterialProgressDrawable mDrawable;
     HeaderState mState = HeaderState.drag;
     ValueAnimator mScaleAnim ;
-
-
+    PullToRefreshLayout mPullToRefreshLayout;
+    float mScale = 1;
 
     public MaterialHeader(Context context)
     {
@@ -44,11 +46,21 @@ public class MaterialHeader extends View implements HeaderController
 
 
         mScaleAnim = ValueAnimator.ofFloat(1,0);
+        mScaleAnim.setDuration(200);
         mScaleAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation)
             {
                 mScale = (float) animation.getAnimatedValue();
+                invalidate();
+            }
+        });
+        mScaleAnim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation)
+            {
+                super.onAnimationEnd(animation);
+                mPullToRefreshLayout.notityFinishAndBack();
             }
         });
 
@@ -84,6 +96,7 @@ public class MaterialHeader extends View implements HeaderController
             mDrawable.stop();
             mDrawable.showArrow(true);
             mDrawable.setStartEndTrim(0,0);
+            mScale = 1;
         }
 
         mState =state;
@@ -93,7 +106,6 @@ public class MaterialHeader extends View implements HeaderController
     public void startRefresh()
     {
         mScale = 1;
-        mAlpa = 255;
         mDrawable.start();
     }
 
@@ -101,6 +113,7 @@ public class MaterialHeader extends View implements HeaderController
     public void onSucceedRefresh()
     {
         mDrawable.stop();
+        mScaleAnim.start();
 
     }
 
@@ -108,11 +121,9 @@ public class MaterialHeader extends View implements HeaderController
     public void onFailRefresh()
     {
         mDrawable.stop();
+        mScaleAnim.start();
     }
 
-
-    float mScale = 1;
-    float mAlpa = 0;
 
 
     @Override
@@ -121,16 +132,17 @@ public class MaterialHeader extends View implements HeaderController
         if (mState==HeaderState.drag||mState==HeaderState.over)
         {
             float progress = offset/200;
-            mAlpa = 255 * progress;
             mDrawable.setStartEndTrim(0f, progress *0.8f);
             mDrawable.setProgressRotation(progress);
+
         }
     }
 
     @Override
     public void attachLayout(PullToRefreshLayout layout)
     {
-
+        mPullToRefreshLayout =  layout;
+        mPullToRefreshLayout.setHandleToTopAnim(true);
     }
 
 
