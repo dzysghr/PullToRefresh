@@ -1,4 +1,4 @@
-package com.dzy.pulltorefresh;
+package com.dzy.pulltorefresh.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;

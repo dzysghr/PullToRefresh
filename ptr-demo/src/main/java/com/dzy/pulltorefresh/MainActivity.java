@@ -8,6 +8,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.dzy.pulltorefresh.adapter.CommenAdapter;
+import com.dzy.pulltorefresh.adapter.ViewHolder;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +34,7 @@ public class MainActivity extends AppCompatActivity
         list.add("头部固定");
         list.add("内容固定-MaterialStyle");
         list.add("刷新完成强制返回");
+        list.add("刷新时隐藏头部");
 
         mLv.setAdapter(new CommenAdapter<String>(this, list)
         {
@@ -59,6 +63,8 @@ public class MainActivity extends AppCompatActivity
                     startActivity(new Intent(MainActivity.this,PinContentActivity.class));
                 else if (position==5)
                     startActivity(new Intent(MainActivity.this,ForceTopActivity.class));
+                else if (position==6)
+                    startActivity(new Intent(MainActivity.this,HideHeaderActivity.class));
 
             }
         });

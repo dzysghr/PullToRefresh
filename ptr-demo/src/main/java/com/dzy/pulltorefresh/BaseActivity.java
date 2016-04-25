@@ -7,6 +7,8 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 
 import com.dzy.ptr.PullToRefreshLayout;
+import com.dzy.pulltorefresh.adapter.CommenAdapter;
+import com.dzy.pulltorefresh.adapter.ViewHolder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +18,8 @@ public class BaseActivity extends AppCompatActivity
 
     protected ListView mLv;
     protected PullToRefreshLayout mLayout;
+    List<String> mList;
+    CommenAdapter<String> mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -27,12 +31,12 @@ public class BaseActivity extends AppCompatActivity
         mLayout = (PullToRefreshLayout) findViewById(R.id.ptrlayout);
 
 
-        List<String> list = new ArrayList<String>();
-        for(int i=0;i<20;i++)
-            list.add(""+i);
+        mList = new ArrayList<String>();
+        mList.add("");
+        mList.add("");
+        mList.add("");
 
-
-        mLv.setAdapter(new CommenAdapter<String>(this,list) {
+        mAdapter = new CommenAdapter<String>(this, mList) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent)
             {
@@ -40,7 +44,8 @@ public class BaseActivity extends AppCompatActivity
                 holder.setTextView(R.id.tvTitile,"title "+mDatas.get(position));
                 return holder.getConvertView();
             }
-        });
+        };
+        mLv.setAdapter(mAdapter);
     }
 
 

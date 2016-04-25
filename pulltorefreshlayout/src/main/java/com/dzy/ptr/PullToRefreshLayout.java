@@ -22,7 +22,8 @@ import android.widget.FrameLayout;
 public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.AnimatorUpdateListener
 {
     // TODO: 2016/4/19 0019 增加自动刷新功能
-    // TODO: 2016/4/24 0024 增加header控制完成上升动画接口，实现没验证
+    // TODO: 2016/4/25 0025 增加动画时间设置，下拉阻尼设置
+
 
     View mChildView;
     HeaderController mUIController;
@@ -37,8 +38,8 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     //开始刷新后不等松手马上回到刷新高度
     private boolean mUpToRefredshingImmediately = false;
 
-    // TODO: 2016/4/22 0022 刷新时不显示头部，微信朋友圈
-    private boolean mBackToTopWhenRefresh = false;
+    //实现，刷新时不显示头部，微信朋友圈，验证中
+    private boolean mHideWhenRefresh = false;
 
     //实现
     //下拉是否可以超过Header的高度
@@ -51,8 +52,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     //实现，刷新完成不等松手马上升到顶部 ，网易新闻
     private boolean mForceToTopWhenFinish = false;
 
-
-
     //当这个为true时，刷新完成上升的动画不会自动调用，需要外部手动调用notityFinishAndBack
     //来隐藏头部，因为有时需要让header刷新成功的动画播放完才执行上升，与mForceToTopWhenFinish冲突，不能同时为true
     private boolean mHandleToTopAnim = false;
@@ -62,7 +61,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     //实现，内容固定，头部向下偏移，显示在内容上层
     private boolean mPinContent = false;
-
 
     //刷新回调，当刷新发生时会回调该接口
     private RefreshLinstener mRefreshLinstener;
@@ -206,7 +204,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
         if (mChildView != null)
         {
-
             if (mPinContent)
                 top = paddingTop;
             else
@@ -366,7 +363,10 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             mFinishAndBack.setIntValues((int) offsetY, 0);
             mFinishAndBack.start();
         } else
+        {
             notifyStateChange(HeaderState.hide);
+            isFinish = false;
+        }
     }
 
 
@@ -399,6 +399,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                 mLastEvent = ev;
                 float curY = ev.getY();
 
+                //如果刷新完成时强制返回顶部且返回顶部的动画正在执行
                 if (mForceToTopWhenFinish && mFinishAndBack.isRunning())
                 {
                     return true;
@@ -408,10 +409,9 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                 {
                     startY = curY;
                 }
-                //如果列表不可以再向上滑，则拦截事件
+                //如果内容滑到顶，则拦截事件
                 else
                 {
-
                     //dy为滑动距离，被childview消费的不算
                     float dy = curY - startY;
                     //getNestedScrollAxes()
@@ -467,17 +467,12 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                 if (offsetY <= 0)
                     break;
 
+                //如果已经完成，就直接隐藏
                 if (isFinish)
                 {
-
-                    //mUIController.StateChange(HeaderState.finish);
-                    mFinishAndBack.setIntValues((int) offsetY, 0);
-                    if (mFinishAndBack.isRunning())
-                        mFinishAndBack.cancel();
-                    mFinishAndBack.start();
+                    notityFinishAndBack();
                     return true;
                 }
-
 
                 //如果下拉程度不达到刷新线
                 if (offsetY < mThresholdHeight)
@@ -485,7 +480,8 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                     //如果当前不是正在刷新，则回到顶部隐藏header
                     if (!isRefreshing)
                     {
-                        mUIController.StateChange(HeaderState.drag);
+                        //mUIController.StateChange(HeaderState.drag);
+                        notifyStateChange(HeaderState.drag);
                         //自动升回顶部,隐藏
                         mBackToTop.setIntValues((int) offsetY, 0);
                         mBackToTop.start();
@@ -494,8 +490,15 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                     //如果正在刷新，且当前位置大于正在刷新高度
                     else if (offsetY > mRefreshingHeight)
                     {
+
+                        int target;
+                        if (mHideWhenRefresh)
+                            target = 0;
+                        else
+                            target = mRefreshingHeight;
+
                         //升到正在刷新高度
-                        mBackToRefreshing.setIntValues((int) offsetY, mRefreshingHeight);
+                        mBackToRefreshing.setIntValues((int) offsetY, target);
                         if (mBackToRefreshing.isRunning())
                             mBackToRefreshing.cancel();
                         mBackToRefreshing.start();
@@ -506,7 +509,14 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                 } else//如果下拉达到了刷新线
                 {
                     //从超过刷新线升到正在刷新的高度
-                    mBackToRefreshing.setIntValues((int) offsetY, mRefreshingHeight);
+
+                    int target;
+                    if (mHideWhenRefresh)
+                        target = 0;
+                    else
+                        target = mRefreshingHeight;
+
+                    mBackToRefreshing.setIntValues((int) offsetY,target);
                     if (mBackToRefreshing.isRunning())
                         mBackToRefreshing.cancel();
                     mBackToRefreshing.start();
@@ -547,7 +557,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
 
         //如果已经达到了刷新线且超过刷新线就要立即刷新的话
-        if (mRefreshImmediately && to > mThresholdHeight && !isFinish)
+        if (mRefreshImmediately && to > mThresholdHeight && !isFinish&&!isRefreshing)
         {
             isRefreshing = true;
             notifyStateChange(HeaderState.refreshing);
@@ -617,6 +627,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
      */
     private void notifyStateChange(HeaderState state)
     {
+        //android.util.Log.e("state", state.toString());
         if (mHeaderState != state)
         {
             mUIController.StateChange(state);
@@ -653,7 +664,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             return mChildView.canScrollVertically(-1);
         }
     }
-
 
 
     /*
@@ -745,14 +755,12 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     }
 
     /** 刷新的时候不显示头部，默认为false
-     * @param backToTopWhenRefresh 是否开启
+     * @param hideWhenRefresh 是否开启
      */
-    // TODO: 2016/4/25 0025 没实现
-    private void setBackToTopWhenRefresh(boolean backToTopWhenRefresh)
+    public void setHideWhenRefresh(boolean hideWhenRefresh)
     {
-        mBackToTopWhenRefresh = backToTopWhenRefresh;
+        mHideWhenRefresh = hideWhenRefresh;
     }
-
 
 
     /** 是否固定头部，默认为false

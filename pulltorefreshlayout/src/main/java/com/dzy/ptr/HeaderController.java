@@ -7,10 +7,9 @@ package com.dzy.ptr;
 public interface HeaderController
 {
 
-    // TODO: 2016/4/24 0024 完善注释
+
     /**
      * 触发刷新的下拉高度,单位px
-     *
      * @return 触发刷新的下拉高度
      */
     int getThresholdHeight();
@@ -48,7 +47,6 @@ public interface HeaderController
      */
     void onFailRefresh();
 
-
     /**
      * 发生拖拽时时此方法会被PullToRefreshLayout调用，可以通过这个偏移量和当前的状态来决定动画的样子
      *
@@ -57,6 +55,9 @@ public interface HeaderController
     void onPositionChange(float offset);
 
 
+    /** 当 Controller被设置到PullToRefreshLayout时调用
+     * @param layout 关联的PullToRefreshLayout
+     */
     void attachLayout(PullToRefreshLayout layout);
 
 }

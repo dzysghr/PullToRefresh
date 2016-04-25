@@ -29,6 +29,8 @@
         </activity>
         <activity android:name=".ForceTopActivity">
         </activity>
+        <activity android:name=".HideHeaderActivity">
+        </activity>
     </application>
 
 </manifest>

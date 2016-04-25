@@ -18,7 +18,7 @@ import com.dzy.ptr.HeaderState;
 import com.dzy.ptr.PullToRefreshLayout;
 
 /**
- * 这个水滴刷新效果不是很完善，代码写得比较乱
+ * 这个水滴刷新，效果不是很完美，代码写得比较乱
  * Created by dzysg on 2016/4/17 0017.
  */
 public class DropWaterHeader extends FrameLayout implements HeaderController
@@ -95,7 +95,7 @@ public class DropWaterHeader extends FrameLayout implements HeaderController
         mHeaderState = state;
         if (mHeaderState == HeaderState.refreshing)
         {
-            StartBacktoRefresh();
+            mPb.setVisibility(View.VISIBLE);
         }
         Log.d("state", "statechange  " + mHeaderState.toString());
 
@@ -171,8 +171,7 @@ public class DropWaterHeader extends FrameLayout implements HeaderController
     protected void onDraw(Canvas canvas)
     {
         super.onDraw(canvas);
-        //Log.d("onDraw", "headerview ");
-        canvas.drawColor(0xff22ff44);
+
         if (mHeaderState == HeaderState.drag)
         {
             if (mState == 0)
@@ -184,36 +183,18 @@ public class DropWaterHeader extends FrameLayout implements HeaderController
                 drawLine(canvas);
             }
         }
-        //        } else if (mHeaderState == HeaderState.refreshing)
-        //        {
-        //            if (isAnimatingBackToRefresh)
-        //            {
-        //                drawBig(canvas);
-        //                drawSmall(canvas);
-        //                drawLine(canvas);
-        //            }
-        //        }
 
     }
 
-    private void StartBacktoRefresh()
-    {
-        mPb.setVisibility(View.VISIBLE);
-    }
 
     private void drawLine(Canvas canvas)
     {
 
         Path path = new Path();
-
         path.moveTo(getMeasuredWidth() / 2 - curBigRadius, curBigY);
-
-
         path.lineTo(getMeasuredWidth() / 2 + curBigRadius, curBigY);
-
         path.quadTo(getMeasuredWidth() / 2 + curSmallRadius - 2, (curSmallY + curBigY) / 2, getMeasuredWidth() / 2 + curSmallRadius, curSmallY);
         path.lineTo(getMeasuredWidth() / 2 - curSmallRadius, curSmallY);
-
         path.quadTo(getMeasuredWidth() / 2 - curSmallRadius + 2, (curSmallY + curBigY) / 2, getMeasuredWidth() / 2 - curBigRadius, curBigY);
 
         canvas.drawPath(path, p);
@@ -237,14 +218,13 @@ public class DropWaterHeader extends FrameLayout implements HeaderController
     private void drawBig(Canvas canvas)
     {
 
-        //80 来自2*bigRadius+10*2    120来自 threshold - 80
+
         float offsetfrom = 2 * (BigRadius + BigCircleMargin);
         float offsetto = getThresholdHeight();
 
         curBigRadius = BigRadius - 5 * (mOffset - offsetfrom) / (offsetto - offsetfrom);
         float cx = getMeasuredWidth() / 2;
         curBigY = getMaxHeight() - mOffset + BigCircleMargin + BigRadius;
-
 
         canvas.drawCircle(cx, curBigY, curBigRadius, p);
 

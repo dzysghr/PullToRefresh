@@ -15,7 +15,7 @@ import com.dzy.ptr.HeaderState;
 import com.dzy.ptr.PullToRefreshLayout;
 
 /**
- *
+ *  Material风格的下拉刷新
  * Created by dzysg on 2016/4/24 0024.
  */
 public class MaterialHeader extends View implements HeaderController
@@ -133,7 +133,7 @@ public class MaterialHeader extends View implements HeaderController
         {
             float progress = offset/200;
             mDrawable.setStartEndTrim(0f, progress *0.8f);
-            mDrawable.setProgressRotation(progress);
+            mDrawable.setProgressRotation(progress*0.7f);
 
         }
     }

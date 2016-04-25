@@ -19,16 +19,23 @@ public class ForceTopActivity extends BaseActivity
             @Override
             public void onRefreshStart()
             {
-                mLayout.postDelayed(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        mLayout.succeedRefresh();
-
-                    }
-                }, 2000);
+                LoadDatas();
             }
         });
+    }
+
+    public void LoadDatas()
+    {
+        mLayout.postDelayed(new Runnable() {
+            @Override
+            public void run()
+            {
+                mList.clear();
+                for(int i=0;i<20;i++)
+                    mList.add(""+i);
+                mAdapter.notifyDataSetChanged();
+                mLayout.succeedRefresh();
+            }
+        },3000);
     }
 }
