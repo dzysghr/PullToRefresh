@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.dzy.ptr.HeaderController;
 import com.dzy.ptr.HeaderState;
+import com.dzy.ptr.PullToRefreshLayout;
 
 /**
  * 这个水滴刷新效果不是很完善，代码写得比较乱
@@ -150,6 +151,12 @@ public class DropWaterHeader extends FrameLayout implements HeaderController
 
 
         invalidate();
+    }
+
+    @Override
+    public void attachLayout(PullToRefreshLayout layout)
+    {
+
     }
 
     @Override

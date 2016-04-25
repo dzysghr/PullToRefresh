@@ -27,6 +27,8 @@
         </activity>
         <activity android:name=".PinContentActivity">
         </activity>
+        <activity android:name=".ForceTopActivity">
+        </activity>
     </application>
 
 </manifest>

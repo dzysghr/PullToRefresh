@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity
         list.add("水滴下拉");
         list.add("头部固定");
         list.add("内容固定");
+        list.add("刷新完成强制返回");
 
         mLv.setAdapter(new CommenAdapter<String>(this, list)
         {
@@ -56,6 +57,9 @@ public class MainActivity extends AppCompatActivity
                     startActivity(new Intent(MainActivity.this,PinHeaderActivity.class));
                 else if (position==4)
                     startActivity(new Intent(MainActivity.this,PinContentActivity.class));
+                else if (position==5)
+                    startActivity(new Intent(MainActivity.this,ForceTopActivity.class));
+
             }
         });
 

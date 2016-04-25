@@ -10,6 +10,7 @@ import android.view.View;
 
 import com.dzy.ptr.HeaderController;
 import com.dzy.ptr.HeaderState;
+import com.dzy.ptr.PullToRefreshLayout;
 
 /**
  *
@@ -124,6 +125,12 @@ public class MaterialHeader extends View implements HeaderController
             mDrawable.setStartEndTrim(0f, progress *0.8f);
             mDrawable.setProgressRotation(progress);
         }
+    }
+
+    @Override
+    public void attachLayout(PullToRefreshLayout layout)
+    {
+
     }
 
 

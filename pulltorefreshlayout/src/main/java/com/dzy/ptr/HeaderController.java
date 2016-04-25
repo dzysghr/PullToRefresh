@@ -57,6 +57,6 @@ public interface HeaderController
     void onPositionChange(float offset);
 
 
-
+    void attachLayout(PullToRefreshLayout layout);
 
 }

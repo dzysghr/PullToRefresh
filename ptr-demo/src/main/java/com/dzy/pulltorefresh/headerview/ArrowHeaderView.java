@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.dzy.ptr.HeaderController;
 import com.dzy.ptr.HeaderState;
+import com.dzy.ptr.PullToRefreshLayout;
 import com.dzy.pulltorefresh.R;
 
 /**
@@ -26,7 +27,6 @@ public class ArrowHeaderView extends FrameLayout implements HeaderController
     TextView mTV;
     ProgressBar mPb;
     ImageView mImageView;
-
 
     private RotateAnimation mArrowUpAnim;
     private RotateAnimation mArrowDownAnim;
@@ -119,7 +119,6 @@ public class ArrowHeaderView extends FrameLayout implements HeaderController
         }
         mLastState = state;
         Log.d("stateChange", state.toString());
-        //requestLayout();
     }
 
     @Override
@@ -146,6 +145,13 @@ public class ArrowHeaderView extends FrameLayout implements HeaderController
         //requestLayout();
         //Log.d("tag", "offset " + offset);
     }
+
+    @Override
+    public void attachLayout(PullToRefreshLayout layout)
+    {
+
+    }
+
 
     @Override
     protected void onDraw(Canvas canvas)
