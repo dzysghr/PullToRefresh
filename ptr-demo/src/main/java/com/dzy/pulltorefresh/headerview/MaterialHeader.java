@@ -8,6 +8,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.View;
 
 import com.dzy.ptr.HeaderController;
@@ -98,8 +99,9 @@ public class MaterialHeader extends View implements HeaderController
             mDrawable.setStartEndTrim(0,0);
             mScale = 1;
         }
-
         mState =state;
+
+        Log.e("tag", "state " + mState.toString());
     }
 
     @Override

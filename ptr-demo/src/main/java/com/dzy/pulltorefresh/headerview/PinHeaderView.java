@@ -82,20 +82,20 @@ public class PinHeaderView extends FrameLayout implements HeaderController
         else if (state == HeaderState.release||state==HeaderState.refreshing)
         {
             mImageView.clearAnimation();
-            mImageView.setVisibility(GONE);
+            mImageView.setVisibility(INVISIBLE);
             mPb.setVisibility(VISIBLE);
-            mTV.setVisibility(GONE);
+            mTV.setVisibility(INVISIBLE);
 
         }
         else if (state==HeaderState.finish)
         {
-            mPb.setVisibility(GONE);
+            mPb.setVisibility(INVISIBLE);
             mTV.setVisibility(VISIBLE);
             mTV.setText("刷新成功");
         }
         else if(state==HeaderState.fail)
         {
-            mPb.setVisibility(GONE);
+            mPb.setVisibility(INVISIBLE);
             mTV.setVisibility(VISIBLE);
             mTV.setText("刷新失败");
         }
@@ -113,7 +113,7 @@ public class PinHeaderView extends FrameLayout implements HeaderController
                 mImageView.startAnimation(mArrowDownAnim);
             }
             mTV.setText("下拉刷新");
-            mPb.setVisibility(GONE);
+            mPb.setVisibility(INVISIBLE);
 
         }
         mLastState = state;

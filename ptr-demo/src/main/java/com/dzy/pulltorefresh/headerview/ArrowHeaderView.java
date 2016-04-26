@@ -115,7 +115,6 @@ public class ArrowHeaderView extends FrameLayout implements HeaderController
             }
             mTV.setText("下拉刷新");
             mPb.setVisibility(INVISIBLE);
-
         }
         mLastState = state;
         Log.d("stateChange", state.toString());

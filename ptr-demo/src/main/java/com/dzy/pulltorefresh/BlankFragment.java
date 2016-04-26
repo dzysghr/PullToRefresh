@@ -50,6 +50,14 @@ public class BlankFragment extends Fragment
 
         TextView tv = (TextView) view.findViewById(R.id.tv);
         tv.setText(mParam1);
+        if (mParam1.equals("one"))
+        {
+            view.setBackgroundColor(0xFFB23AEE);
+        }else if (mParam1.equals("two"))
+            view.setBackgroundColor(0xFFFFF68F);
+        else
+            view.setBackgroundColor(0xFF00008B);
+
         return view;
     }
 
