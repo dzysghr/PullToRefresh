@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity
         list.add("内容固定-MaterialStyle");
         list.add("刷新完成强制返回");
         list.add("刷新时隐藏头部");
-        list.add("viewPager");
+        list.add("viewPager共存");
         mLv.setAdapter(new CommenAdapter<String>(this, list)
         {
             @Override

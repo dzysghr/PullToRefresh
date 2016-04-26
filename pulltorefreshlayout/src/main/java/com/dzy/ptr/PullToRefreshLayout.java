@@ -7,6 +7,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
 import android.support.v4.view.ViewCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -25,7 +26,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     // TODO: 2016/4/19 0019 增加自动刷新功能
     // TODO: 2016/4/25 0025 增加动画时间设置，下拉阻尼设置
-    // TODO: 2016/4/25 0025 横竖判定,参照SwipeRefreshLayout重构
 
     View mChildView;
     HeaderController mUIController;
@@ -33,12 +33,13 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
 
 
-    //TODO 当子view可以横向滑动时，增加一些特殊的判断
+    //实现
     private boolean mHasHorizentalChild =false;
 
     //实现
     //超过刷新线马上刷新，比如 QQ
     private boolean mRefreshImmediately = false;
+
 
     // TODO: 2016/4/21 0021 考虑到功能实用性，未实现
     //开始刷新后不等松手马上回到刷新高度
@@ -106,7 +107,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     //当前偏移量
     private float offsetY;
 
-    private MotionEvent mLastEvent;
+
 
     private  int mTouchSlop;
 
@@ -194,9 +195,9 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     {
         int paddingLeft = getPaddingLeft();
         int paddingTop = getPaddingTop();
-        int top = 0;
-        int right = 0;
-        int bottom = 0;
+        int top;
+        int right;
+        int bottom;
         int left = paddingLeft;
         if (mUIController != null)
         {
@@ -252,7 +253,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             mChildView = getChildAt(i);
         }
         if (getChildCount() > 2)
-            throw new IllegalArgumentException("PullToRefreshLayout should only have one child view");
+            throw new IllegalArgumentException("PullToRefreshLayout should only have one direct child view");
     }
 
 
@@ -337,12 +338,12 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     /**
      * 处理完成后的逻辑
-     *
      * @param succeed 成功与否
      */
     private void processFinish(boolean succeed)
     {
         isFinish = true;
+        //如果当前正在刷新才需要处理
         if (isRefreshing)
         {
             isRefreshing = false;
@@ -418,14 +419,15 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             case MotionEvent.ACTION_MOVE:
 
                 float curY = ev.getY();
-                mLastEvent = ev;
                 if (!isDrag&&Math.abs(curY-startY)<mTouchSlop)//如果滑动幅度太小,不处理
                 {
+                    android.util.Log.e("tag", "scroll too small");
                     break;
                 }
                 //处理横向滑动
                 else if (!isDrag&&checkHorizental(ev))
                 {
+                    android.util.Log.e("tag", "handle Horizental");
                     break;
                 }
                 isDrag =true;
@@ -440,6 +442,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                 {
                     startY = curY;
                     startX = ev.getX();
+                    isDrag = false;
                 }
                 //如果内容滑到顶，则拦截事件
                 else
@@ -700,8 +703,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     }
 
     /**
-     * 判断子控件能否向上滑（下拉）
-     *
+     * 判断子控件能否向下拉,主要代码来自{@link SwipeRefreshLayout#canChildScrollUp()}
      * @return 能则返回true
      */
     private boolean canChildScrollUp()
@@ -745,11 +747,11 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         mRefreshLinstener = refreshLinstener;
     }
 
-    public ScrollCondition getScrollableListener()
-    {
-        return mCondition;
-    }
 
+
+    /** 下拉条件判断，当使用者需要自己判断下拉的逻辑时需要实现该接口
+     * @param condition 下拉条件判断接口
+     */
     public void setScrollableListener(ScrollCondition condition)
     {
         mCondition = condition;
@@ -763,6 +765,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     {
         mRefreshImmediately = refreshImmediately;
     }
+
 
     /** 开始刷新后不等松手马上回到刷新高度，默认为false
      * @param upToRefredshingImmediately 是否开启
@@ -826,20 +829,24 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     }
 
 
-    /** 是否固定头部，默认为false
+    /** 是否固定头部，默认为false,不能与pinContent同时为true
      * @param pinHeader 是否固定头部
      */
     public void setPinHeader(boolean pinHeader)
     {
         mPinHeader = pinHeader;
+        if (pinHeader)
+            mPinContent = false;
     }
 
-    /** 是否固定内容布局，默认为false
+    /** 是否固定内容布局，默认为false,不能与pinHeader同时为true
      * @param pinContent 是否固定内容布局
      */
     public void setPinContent(boolean pinContent)
     {
         mPinContent = pinContent;
+        if (pinContent)
+            mPinHeader =false;
     }
 
 

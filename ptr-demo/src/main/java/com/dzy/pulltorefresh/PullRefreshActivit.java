@@ -12,6 +12,9 @@ public class PullRefreshActivit extends BaseActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
+
+
         mLayout.setHeader(new ArrowHeaderView(this));
         mLayout.setRefreshImmediately(true);
 

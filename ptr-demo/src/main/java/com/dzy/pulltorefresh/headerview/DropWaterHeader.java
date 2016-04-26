@@ -18,7 +18,7 @@ import com.dzy.ptr.HeaderState;
 import com.dzy.ptr.PullToRefreshLayout;
 
 /**
- * 这个水滴刷新，效果不是很完美，代码写得比较乱
+ * 这个水滴刷新，效果不是很完美，代码极度混乱，待重写
  * Created by dzysg on 2016/4/17 0017.
  */
 public class DropWaterHeader extends FrameLayout implements HeaderController

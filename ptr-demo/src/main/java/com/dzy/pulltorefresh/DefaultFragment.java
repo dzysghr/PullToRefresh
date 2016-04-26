@@ -19,7 +19,6 @@ public class DefaultFragment extends Fragment
 {
 
     private static final String ARG_PARAM1 = "param1";
-
     RecyclerView mRecyclerView;
     private PullToRefreshLayout mLayout;
 
@@ -53,7 +52,6 @@ public class DefaultFragment extends Fragment
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         mRecyclerView.setAdapter(new DefaultRecycleViewAdapter(getContext(),null));
 
-
         mLayout = (PullToRefreshLayout) view.findViewById(R.id.ptrlayout);
 
         mLayout.setHeader(new MaterialHeader(getContext()));
@@ -71,7 +69,7 @@ public class DefaultFragment extends Fragment
                     {
                         mLayout.succeedRefresh();
                     }
-                },2000);
+                },3000);
             }
         });
 
