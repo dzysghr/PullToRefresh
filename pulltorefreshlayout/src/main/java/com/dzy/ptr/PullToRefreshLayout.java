@@ -853,7 +853,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
 
     /** 当子view可以横向滑动时，需要开启此选项
-     *  建议同时开启{@link PullToRefreshLayout#setCanScrollWhenRefreshing(boolean)}，当开始刷新后不再处理header下拉逻辑
+     *  开启后建议关闭{@link PullToRefreshLayout#setCanScrollWhenRefreshing(boolean)}，当开始刷新后不再处理header下拉逻辑
      *
      * @param hasHorizentalChild 是否开启横向检测
      */
