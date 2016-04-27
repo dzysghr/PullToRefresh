@@ -24,8 +24,6 @@ import android.widget.FrameLayout;
 public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.AnimatorUpdateListener
 {
 
-    // TODO: 2016/4/19 0019 增加自动刷新功能
-
     View mChildView;
     HeaderController mUIController;
     View mHeader;
@@ -316,11 +314,11 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
                 //针对mCanScrollWhenRefreshing=false或mForceToTopWhenFinish=true ，刷新时手指一直不离开屏幕下拉，刷新完成后startY还是原来的值，
                 // 导致判定curY - startY 瞬间从一个大数值开始，header瞬移。所以设置隐藏完成时手指的位置为滑动起始的位置
-                if (!mCanScrollWhenRefreshing || mForceToTopWhenFinish)
-                {
-                    startX = mLastEvent.getX();
-                    startY = mLastEvent.getY();
-                }
+//                if (!mCanScrollWhenRefreshing || mForceToTopWhenFinish)
+//                {
+//                    startX = mLastEvent.getX();
+//                    startY = mLastEvent.getY();
+//                }
             }
         });
 
@@ -410,7 +408,9 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation)
                 {
-                    moveTo((float)animation.getAnimatedValue());
+                    float val = (float) animation.getAnimatedValue();
+                    moveTo(val);
+                    LastPos = val;
                 }
             });
             animator.start();
@@ -446,10 +446,22 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
         mLastEvent = ev;
 
-
         //如果刷新直到完成不可以再拉动头部
-        if ((isFinish || isRefreshing) && !mCanScrollWhenRefreshing)
+        if ((isFinish || isRefreshing) && !mCanScrollWhenRefreshing||mIsAutoRefreshing)
+        {
+            startY = ev.getY();
+            startX = ev.getX();
             return super.dispatchTouchEvent(ev);
+        }
+
+        //如果刷新完成时强制返回顶部且返回顶部的动画正在执行
+        if (mForceToTopWhenFinish && mFinishAndBack.isRunning())
+        {
+            startY = ev.getY();
+            startX = ev.getX();
+            return super.dispatchTouchEvent(ev);
+        }
+
 
         switch (ev.getAction())
         {
@@ -490,20 +502,17 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                     android.util.Log.e("tag", "handle Horizental");
                     break;
                 }
-
-                isDrag = true;
-                //如果刷新完成时强制返回顶部且返回顶部的动画正在执行
-                if (mForceToTopWhenFinish && mFinishAndBack.isRunning())
-                {
-                    return true;
-                }
                 //如果内容滑到顶，则拦截事件
                 else
                 {
+
+                    //开始处理下拉逻辑
+                    isDrag = true;
+
                     //dy为滑动距离，被childview消费的不算
                     float dy = curY - startY;
 
-                    //2是阻尼系数，为了产生韧性效果
+                    //mResistance 是阻尼系数，为了产生韧性效果
                     dy = dy / mResistance;
 
                     //lastPos 是最后一次抬手或者动画完成时的偏移量
@@ -535,7 +544,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                     if (!mHasSendCancel)
                     {
                         Log.e("tag", "send cancel event");
-
                         //down事件被下层接收，造成下层控件显示按下效果（比如listview按下时Item颜色加深），如果此后要拦截move事件，就发一个cancel事件让下层view取消按下的效果
                         MotionEvent cancelEvent = MotionEvent.obtain(ev.getDownTime(), ev.getEventTime() + ViewConfiguration.getLongPressTimeout(), MotionEvent.ACTION_CANCEL, ev.getX(), ev.getY(), ev.getMetaState());
                         super.dispatchTouchEvent(cancelEvent);
@@ -692,7 +700,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             }
             return;
         }
-
         //如果是自动刷新只需要达到了刷新位置，就开始刷新
         if (mIsAutoRefreshing&&to>=mRefreshingHeight)
         {
