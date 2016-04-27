@@ -32,9 +32,8 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     View mHeader;
 
 
-
     //实现
-    private boolean mHasHorizentalChild =false;
+    private boolean mHasHorizentalChild = false;
 
     //实现
     //超过刷新线马上刷新，比如 QQ
@@ -94,12 +93,11 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     private boolean isOnTouch = false;
 
     //是否已经开始处理滑动逻辑
-    private boolean isDrag =false;
+    private boolean isDrag = false;
 
     //开始处理滑动时手指的坐标
     private float startY;
     private float startX;
-
 
     //lastPos 是最近一次抬手或者动画完成时的ChildView的偏移量
     private float LastPos = 0;
@@ -107,9 +105,9 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     //当前偏移量
     private float offsetY;
 
+    private MotionEvent mLastEvent;
 
-
-    private  int mTouchSlop;
+    private int mTouchSlop = 0;
 
     private boolean mHasSendCancel = false;
 
@@ -133,7 +131,8 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     public PullToRefreshLayout(Context context, AttributeSet attrs, int defStyleAttr)
     {
         super(context, attrs, defStyleAttr);
-        mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
+        if (!isInEditMode())
+            mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
 
     }
 
@@ -141,8 +140,8 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     public PullToRefreshLayout(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes)
     {
         super(context, attrs, defStyleAttr, defStyleRes);
-
-        mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
+        if (!isInEditMode())
+            mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
     }
 
     /**
@@ -298,6 +297,14 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                 super.onAnimationEnd(animation);
                 notifyStateChange(HeaderState.hide);
                 isFinish = false;
+
+                //针对mCanScrollWhenRefreshing=false，刷新时手指一直不离开屏幕下拉，刷新完成后startY还是原来的值，
+                // 导致判定curY - startY 瞬间从一个大数值开始，header瞬移。所以设置隐藏完成时手指的位置为滑动起始的位置
+                if (!mCanScrollWhenRefreshing)
+                {
+                    startX = mLastEvent.getX();
+                    startY = mLastEvent.getY();
+                }
             }
         });
 
@@ -338,6 +345,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     /**
      * 处理完成后的逻辑
+     *
      * @param succeed 成功与否
      */
     private void processFinish(boolean succeed)
@@ -398,9 +406,11 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         if (mUIController == null)
             return super.dispatchTouchEvent(ev);
 
+        mLastEvent = ev;
+
 
         //如果刷新直到完成不可以再拉动头部
-        if ((isFinish||isRefreshing)&& !mCanScrollWhenRefreshing)
+        if ((isFinish || isRefreshing) && !mCanScrollWhenRefreshing)
             return super.dispatchTouchEvent(ev);
 
         switch (ev.getAction())
@@ -419,38 +429,41 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             case MotionEvent.ACTION_MOVE:
 
                 float curY = ev.getY();
-                if (!isDrag&&Math.abs(curY-startY)<mTouchSlop)//如果滑动幅度太小,不处理
-                {
-                    android.util.Log.e("tag", "scroll too small");
-                    break;
-                }
-                //处理横向滑动
-                else if (!isDrag&&checkHorizental(ev))
-                {
-                    android.util.Log.e("tag", "handle Horizental");
-                    break;
-                }
-                isDrag =true;
 
-                //如果刷新完成时强制返回顶部且返回顶部的动画正在执行
-                if (mForceToTopWhenFinish && mFinishAndBack.isRunning())
-                {
-                    return true;
-                }
-
+                //如果子view可以上滑
                 if (canChildScrollUp())
                 {
                     startY = curY;
                     startX = ev.getX();
                     isDrag = false;
+                    break;
+                }
+                //如果滑动幅度太小,不处理
+                if (!isDrag && Math.abs(curY - startY) < mTouchSlop)
+                {
+                    android.util.Log.e("tag", "scroll too small");
+                    break;
+                }
+                //处理横向滑动
+                if (mHasHorizentalChild&&!isDrag &&checkHorizental(ev))
+                {
+                    android.util.Log.e("tag", "handle Horizental");
+                    break;
+                }
+
+                isDrag = true;
+                //如果刷新完成时强制返回顶部且返回顶部的动画正在执行
+                if (mForceToTopWhenFinish && mFinishAndBack.isRunning())
+                {
+                    return true;
                 }
                 //如果内容滑到顶，则拦截事件
                 else
                 {
                     //dy为滑动距离，被childview消费的不算
                     float dy = curY - startY;
-                    //getNestedScrollAxes()
-                    //2是阻尼系数，为了产生韧性效果,下拉时才会有
+
+                    //2是阻尼系数，为了产生韧性效果
                     dy = dy / 2f;
 
                     //lastPos 是最后一次抬手或者动画完成时的偏移量
@@ -492,12 +505,11 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                     moveTo(newOffset);
                     return true;
                 }
-                break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
 
                 isOnTouch = false;
-                isDrag =false;
+                isDrag = false;
                 mHorizentalScolling = false;
                 LastPos = offsetY;
 
@@ -554,7 +566,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                     else
                         target = mRefreshingHeight;
 
-                    mBackToRefreshing.setIntValues((int) offsetY,target);
+                    mBackToRefreshing.setIntValues((int) offsetY, target);
                     if (mBackToRefreshing.isRunning())
                         mBackToRefreshing.cancel();
                     mBackToRefreshing.start();
@@ -580,7 +592,8 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     }
 
 
-    /** 横向处理，如果子view需要横向滑动且当前滑动确实是横向，则返回true
+    /**
+     * 横向处理，如果子view需要横向滑动且当前滑动确实是横向，则返回true
      * @param ev 当前事件
      * @return 如果子view需要横向滑动且当前滑动确实是横向，则返回true
      */
@@ -590,19 +603,16 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         if (mHorizentalScolling)
             return true;
 
-        if (mHasHorizentalChild)
+        float diffX = ev.getX() - startX;
+        float diffY = ev.getY() - startY;
+        //判定横向滑动，乘 0.5 代表当y是x的两倍时才算下拉，否则都算横向
+        if (Math.abs(diffX) > Math.abs(diffY) * 0.5)
         {
-            float diffX = ev.getX()-startX;
-            float diffY = ev.getY()-startY;
-
-            //判定横向滑动，乘 0.5 代表当y是x的两倍时才算下拉，否则都算横向
-            if (Math.abs(diffX)>Math.abs(diffY)*0.5)
-            {
-                android.util.Log.e("tag", "mHorizentalScolling = true");
-                mHorizentalScolling = true;
-                return true;
-            }
+            android.util.Log.e("tag", "mHorizentalScolling = true");
+            mHorizentalScolling = true;
+            return true;
         }
+
         return false;
     }
 
@@ -623,7 +633,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
 
         //如果已经达到了刷新线且超过刷新线就要立即刷新的话
-        if (mRefreshImmediately && to > mThresholdHeight && !isFinish&&!isRefreshing)
+        if (mRefreshImmediately && to > mThresholdHeight && !isFinish && !isRefreshing)
         {
             isRefreshing = true;
             notifyStateChange(HeaderState.refreshing);
@@ -683,7 +693,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             mBackToTop.cancel();
         if (mBackToRefreshing.isRunning())
             mBackToRefreshing.cancel();
-        if (!mForceToTopWhenFinish&&mFinishAndBack.isRunning())
+        if (!mForceToTopWhenFinish && mFinishAndBack.isRunning())
             mFinishAndBack.cancel();
     }
 
@@ -704,6 +714,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     /**
      * 判断子控件能否向下拉,主要代码来自{@link SwipeRefreshLayout#canChildScrollUp()}
+     *
      * @return 能则返回true
      */
     private boolean canChildScrollUp()
@@ -715,16 +726,18 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         if (mChildView == null)
             return true;
 
-        if (android.os.Build.VERSION.SDK_INT < 14) {
-            if (mChildView instanceof AbsListView) {
+        if (android.os.Build.VERSION.SDK_INT < 14)
+        {
+            if (mChildView instanceof AbsListView)
+            {
                 final AbsListView absListView = (AbsListView) mChildView;
-                return absListView.getChildCount() > 0
-                        && (absListView.getFirstVisiblePosition() > 0 || absListView.getChildAt(0)
-                        .getTop() < absListView.getPaddingTop());
-            } else {
+                return absListView.getChildCount() > 0 && (absListView.getFirstVisiblePosition() > 0 || absListView.getChildAt(0).getTop() < absListView.getPaddingTop());
+            } else
+            {
                 return ViewCompat.canScrollVertically(mChildView, -1) || mChildView.getScrollY() > 0;
             }
-        } else {
+        } else
+        {
             return ViewCompat.canScrollVertically(mChildView, -1);
         }
     }
@@ -739,7 +752,9 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         return mRefreshLinstener;
     }
 
-    /** 刷新回调，当开始刷新时会调用该接口
+    /**
+     * 刷新回调，当开始刷新时会调用该接口
+     *
      * @param refreshLinstener 回调接口
      */
     public void setRefreshLinstener(RefreshLinstener refreshLinstener)
@@ -748,8 +763,9 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     }
 
 
-
-    /** 下拉条件判断，当使用者需要自己判断下拉的逻辑时需要实现该接口
+    /**
+     * 下拉条件判断，当使用者需要自己判断下拉的逻辑时需要实现该接口
+     *
      * @param condition 下拉条件判断接口
      */
     public void setScrollableListener(ScrollCondition condition)
@@ -758,7 +774,9 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     }
 
 
-    /** 是否超过刷新线立即刷新，默认为false
+    /**
+     * 是否超过刷新线立即刷新，默认为false
+     *
      * @param refreshImmediately 是否超过刷新线立即刷新
      */
     public void setRefreshImmediately(boolean refreshImmediately)
@@ -767,7 +785,9 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     }
 
 
-    /** 开始刷新后不等松手马上回到刷新高度，默认为false
+    /**
+     * 开始刷新后不等松手马上回到刷新高度，默认为false
+     *
      * @param upToRefredshingImmediately 是否开启
      */
     // TODO: 2016/4/25 0025 没实现
@@ -777,7 +797,9 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     }
 
 
-    /** 下拉是否可以超过Header的高度，默认为false
+    /**
+     * 下拉是否可以超过Header的高度，默认为false
+     *
      * @param canOverTheHeaderHeight 下拉是否可以超过Header的高度
      */
     public void setCanOverTheHeaderHeight(boolean canOverTheHeaderHeight)
@@ -786,8 +808,10 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     }
 
 
-    /** 正在刷新的时候也可以拉动,默认为true。
+    /**
+     * 正在刷新的时候也可以拉动,默认为true。
      * 如果为false,从开始刷新到结束头部完全隐藏才会再处理滑动逻辑
+     *
      * @param canScrollWhenRefreshing 是否开启
      */
     public void setCanScrollWhenRefreshing(boolean canScrollWhenRefreshing)
@@ -795,8 +819,10 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         this.mCanScrollWhenRefreshing = canScrollWhenRefreshing;
     }
 
-    /** 刷新完成不等松手马上升到顶部，默认为false,与{@link PullToRefreshLayout#setHandleToTopAnim(boolean)} 冲突
-     *  不能同时为true，当其中一个为true时,另外一个自动设为false
+    /**
+     * 刷新完成不等松手马上升到顶部，默认为false,与{@link PullToRefreshLayout#setHandleToTopAnim(boolean)} 冲突
+     * 不能同时为true，当其中一个为true时,另外一个自动设为false
+     *
      * @param forceToTopWhenFinish 是否开启
      */
     public void setForceToTopWhenFinish(boolean forceToTopWhenFinish)
@@ -807,10 +833,12 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     }
 
 
-    /** 是否由外部控制刷新完成后上升回顶部的动画，默认为false。当这个为true时，刷新完成后header不会自动上升回顶部，需要手动
+    /**
+     * 是否由外部控制刷新完成后上升回顶部的动画，默认为false。当这个为true时，刷新完成后header不会自动上升回顶部，需要手动
      * 调用 {@link PullToRefreshLayout#notityFinishAndBack()}
      * 因为有时需要让header刷新成功的动画播放完才执行上升，与ForceToTopWhenFinish冲突，不能同时为true，当其中一个为true时,另外
      * 一个自动设为false
+     *
      * @param handleToTopAnim 是否开启
      */
     public void setHandleToTopAnim(boolean handleToTopAnim)
@@ -820,7 +848,9 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             mForceToTopWhenFinish = false;
     }
 
-    /** 刷新的时候不显示头部，默认为false
+    /**
+     * 刷新的时候不显示头部，默认为false
+     *
      * @param hideWhenRefresh 是否开启
      */
     public void setHideWhenRefresh(boolean hideWhenRefresh)
@@ -829,7 +859,9 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     }
 
 
-    /** 是否固定头部，默认为false,不能与pinContent同时为true
+    /**
+     * 是否固定头部，默认为false,不能与pinContent同时为true
+     *
      * @param pinHeader 是否固定头部
      */
     public void setPinHeader(boolean pinHeader)
@@ -839,18 +871,22 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             mPinContent = false;
     }
 
-    /** 是否固定内容布局，默认为false,不能与pinHeader同时为true
+    /**
+     * 是否固定内容布局，默认为false,不能与pinHeader同时为true
+     *
      * @param pinContent 是否固定内容布局
      */
     public void setPinContent(boolean pinContent)
     {
         mPinContent = pinContent;
         if (pinContent)
-            mPinHeader =false;
+            mPinHeader = false;
     }
 
 
-    /** 手指是否还在屏幕上
+    /**
+     * 手指是否还在屏幕上
+     *
      * @return 手指是否还在屏幕上
      */
     public boolean isOnTouch()
@@ -859,8 +895,9 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     }
 
 
-    /** 当子view可以横向滑动时，需要开启此选项
-     *  开启后建议关闭{@link PullToRefreshLayout#setCanScrollWhenRefreshing(boolean)}，当开始刷新后不再处理header下拉逻辑
+    /**
+     * 当子view可以横向滑动时，需要开启此选项
+     * 开启后建议关闭{@link PullToRefreshLayout#setCanScrollWhenRefreshing(boolean)}，当开始刷新后不再处理header下拉逻辑
      *
      * @param hasHorizentalChild 是否开启横向检测
      */
