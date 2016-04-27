@@ -48,6 +48,7 @@ public class DefaultFragment extends Fragment
     {
 
         View view =inflater.inflate(R.layout.fragment_blank, container, false);
+
         mRecyclerView = (RecyclerView) view.findViewById(R.id.review);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         mRecyclerView.setAdapter(new DefaultRecycleViewAdapter(getContext(),null));
@@ -56,7 +57,7 @@ public class DefaultFragment extends Fragment
 
         mLayout.setHeader(new MaterialHeader(getContext()));
         mLayout.setPinContent(true);
-        mLayout.setHasHorizentalChild(true);
+        mLayout.setHasHorizontalChild(true);
         mLayout.setCanScrollWhenRefreshing(false);
 
         mLayout.setRefreshLinstener(new RefreshLinstener() {
@@ -75,8 +76,6 @@ public class DefaultFragment extends Fragment
 
         return view;
     }
-
-
 
     @Override
     public void onAttach(Context context)

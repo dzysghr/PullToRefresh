@@ -9,15 +9,14 @@ public interface HeaderController
 
 
     /**
-     * 触发刷新的下拉高度,单位px
+     * 触发刷新的下拉高度,单位px,小于等于你的header高度
      * @return 触发刷新的下拉高度
      */
     int getThresholdHeight();
 
 
     /**
-     * 正在刷新时的高度,单位px，这个值应该小于等于 MaxHeight
-     *
+     * 正在刷新时的高度,单位px，小于等于你的header高度
      * @return 正在刷新时的高度
      */
     int getRefreshingHeight();
@@ -49,8 +48,8 @@ public interface HeaderController
 
     /**
      * 发生拖拽时时此方法会被PullToRefreshLayout调用，可以通过这个偏移量和当前的状态来决定动画的样子
-     *
-     * @param offset 当头部不固定时表示位置偏移量，当头部内容固定时表示头部露出的高度，范围为下拉时从 0 到 MaxHeight,上升反之。
+     * @param offset 当头部不固定时表示位置偏移量，当头部内容固定时表示头部露出的高度
+     *               范围为下拉时从 0 到 header.getMeasureHeight,上升反之。
      */
     void onPositionChange(float offset);
 
