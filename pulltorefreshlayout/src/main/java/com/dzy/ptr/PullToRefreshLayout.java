@@ -38,7 +38,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     //超过刷新线马上刷新，比如 QQ
     private boolean mRefreshImmediately = false;
 
-
     // TODO: 2016/4/21 0021 考虑到功能实用性，未实现
     //开始刷新后不等松手马上回到刷新高度
     private boolean mUpToRefredshingImmediately = false;
@@ -117,6 +116,9 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     //下拉阴尼
     private float mResistance = 2;
 
+
+    private boolean mIsAutoRefreshing =false;
+
     private ValueAnimator mBackToTop;
     private ValueAnimator mBackToRefreshing;
     private ValueAnimator mFinishAndBack;
@@ -151,6 +153,10 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     }
 
 
+    /** 设置头部
+     * @param header 必须实现{@link HeaderController} 接口
+     * @param params 布局参数
+     */
     public void setHeader(View header, LayoutParams params)
     {
         if (header == null)
@@ -180,7 +186,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     /**
      * 设置头部
-     * @param header 应该实现{@link HeaderController}
+     * @param header 必须实现{@link HeaderController} 接口
      */
     public void setHeader(View header)
     {
@@ -393,7 +399,29 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         }
     }
 
+    public void autoRefresh()
+    {
+        if (!isRefreshing&&!isFinish)
+        {
+            ValueAnimator animator = ValueAnimator.ofFloat(0,mRefreshingHeight);
+            animator.setDuration(500);
+            mIsAutoRefreshing =true;
+            animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation)
+                {
+                    moveTo((float)animation.getAnimatedValue());
+                }
+            });
+            animator.start();
+        }
+    }
 
+
+
+    /**
+     *  参考{@link PullToRefreshLayout#setHandleToTopAnim(boolean)}
+     */
     public void notityFinishAndBack()
     {
         if (offsetY != 0)
@@ -606,7 +634,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     /**
      * 横向处理，如果子view需要横向滑动且当前滑动确实是横向，则返回true
-     *
      * @param ev 当前事件
      * @return 如果子view需要横向滑动且当前滑动确实是横向，则返回true
      */
@@ -618,8 +645,9 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
         float diffX = ev.getX() - startX;
         float diffY = ev.getY() - startY;
-        //判定横向滑动，乘 0.5 代表当y是x的两倍时才算下拉，否则都算横向
-        if (Math.abs(diffX) > Math.abs(diffY) * 0.5)
+
+        //判定横向滑动，2是灵敏度， 乘 2 代表当y是x的两倍时才算下拉，否则都算横向
+        if (Math.abs(diffX)*2> Math.abs(diffY))
         {
             android.util.Log.e("tag", "mHorizontalScolling = true");
             mHorizontalScolling = true;
@@ -646,7 +674,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
 
         //如果已经达到了刷新线且超过刷新线就要立即刷新的话
-        if (mRefreshImmediately && to > mThresholdHeight && !isFinish && !isRefreshing)
+        if (mRefreshImmediately && to >= mThresholdHeight && !isFinish && !isRefreshing)
         {
             isRefreshing = true;
             notifyStateChange(HeaderState.refreshing);
@@ -662,6 +690,19 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                 mBackToRefreshing.setIntValues((int) to, mRefreshingHeight);
                 mBackToRefreshing.start();
             }
+            return;
+        }
+
+        //如果是自动刷新只需要达到了刷新位置，就开始刷新
+        if (mIsAutoRefreshing&&to>=mRefreshingHeight)
+        {
+            isRefreshing = true;
+            mIsAutoRefreshing =false;
+            notifyStateChange(HeaderState.refreshing);
+            mUIController.startRefresh();
+
+            if (mRefreshLinstener != null)
+                mRefreshLinstener.onRefreshStart();
             return;
         }
 
@@ -701,7 +742,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     private void cancelAnimIfNeed()
     {
-
         if (mBackToTop.isRunning())
             mBackToTop.cancel();
         if (mBackToRefreshing.isRunning())
@@ -727,14 +767,13 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     /**
      * 判断子控件能否向下拉,主要代码来自{@link SwipeRefreshLayout#canChildScrollUp()}
-     *
      * @return 能则返回true
      */
     private boolean canChildScrollUp()
     {
         //如果用户自己实现判断逻辑，则以用户的逻辑为准
         if (mCondition != null)
-            return mCondition.canScrollUp();
+            return !mCondition.canRefresh();
 
         if (mChildView == null)
             return true;
@@ -848,10 +887,9 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     /**
      * 是否由外部控制刷新完成后上升回顶部的动画，默认为false。当这个为true时，刷新完成后header不会自动上升回顶部，需要手动
-     * 调用 {@link PullToRefreshLayout#notityFinishAndBack()}
+     * 调用 {@link PullToRefreshLayout#notityFinishAndBack()} 来触发上升动画
      * 因为有时需要让header刷新成功的动画播放完才执行上升，与ForceToTopWhenFinish冲突，不能同时为true，当其中一个为true时,另外
      * 一个自动设为false
-     *
      * @param handleToTopAnim 是否开启
      */
     public void setHandleToTopAnim(boolean handleToTopAnim)
@@ -930,10 +968,8 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         mResistance = resistance;
     }
 
-
     /**
      * header上升动画时间
-     *
      * @param animDuration 动画时间
      */
     public void setAnimDuration(int animDuration)

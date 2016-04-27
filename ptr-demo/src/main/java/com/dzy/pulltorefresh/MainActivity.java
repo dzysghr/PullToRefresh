@@ -36,6 +36,9 @@ public class MainActivity extends AppCompatActivity
         list.add("刷新完成强制返回");
         list.add("刷新时隐藏头部");
         list.add("viewPager共存");
+        list.add("自动刷新+ScrollView");
+
+
         mLv.setAdapter(new CommenAdapter<String>(this, list)
         {
             @Override
@@ -67,6 +70,8 @@ public class MainActivity extends AppCompatActivity
                     startActivity(new Intent(MainActivity.this,HideHeaderActivity.class));
                 else if (position==7)
                     startActivity(new Intent(MainActivity.this,ViewpagerActivity.class));
+                else if (position==8)
+                    startActivity(new Intent(MainActivity.this,AutoRefreshActivity.class));
 
             }
         });

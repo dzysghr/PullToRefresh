@@ -24,7 +24,6 @@ public class ReleaseActivity extends BaseActivity
             }
         });
 
-
     }
 
     public void LoadDatas()

@@ -33,6 +33,8 @@
         </activity>
         <activity android:name=".ViewpagerActivity">
         </activity>
+        <activity android:name=".AutoRefreshActivity">
+        </activity>
     </application>
 
 </manifest>
