@@ -103,6 +103,7 @@ public class ArrowHeaderView extends FrameLayout implements HeaderController
         else if (state==HeaderState.hide)
         {
             mImageView.setVisibility(VISIBLE);
+            mTV.setVisibility(VISIBLE);
             mArrowUpAnim.reset();
         }
 

@@ -26,14 +26,6 @@ public class PullRefreshActivit extends BaseActivity
             }
         });
 
-
-        mLayout.postDelayed(new Runnable() {
-            @Override
-            public void run()
-            {
-                mLayout.autoRefresh();
-            }
-        },1000);
     }
 
 

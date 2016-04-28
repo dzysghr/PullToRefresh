@@ -201,11 +201,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     @Override
     protected void onLayout(boolean flag, int i, int j, int k, int l)
     {
-        layoutChildren();
-    }
-
-    private void layoutChildren()
-    {
         int paddingLeft = getPaddingLeft();
         int paddingTop = getPaddingTop();
         int top;
@@ -253,6 +248,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                 bringChildToFront(mChildView);
         }
     }
+
 
 
     @Override
@@ -312,13 +308,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                 notifyStateChange(HeaderState.hide);
                 isFinish = false;
 
-                //针对mCanScrollWhenRefreshing=false或mForceToTopWhenFinish=true ，刷新时手指一直不离开屏幕下拉，刷新完成后startY还是原来的值，
-                // 导致判定curY - startY 瞬间从一个大数值开始，header瞬移。所以设置隐藏完成时手指的位置为滑动起始的位置
-//                if (!mCanScrollWhenRefreshing || mForceToTopWhenFinish)
-//                {
-//                    startX = mLastEvent.getX();
-//                    startY = mLastEvent.getY();
-//                }
             }
         });
 
@@ -491,18 +480,16 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                 //如果滑动幅度太小,不处理
                 if (!isDrag && Math.abs(curY - startY) < mTouchSlop)
                 {
-                    // TODO: 2016/4/27 0027 delete log
-                    android.util.Log.e("tag", "scroll too small");
+                    Log.e("tag", "scroll too small");
                     break;
                 }
                 //处理横向滑动
                 if (mHasHorizontalChild && !isDrag && checkHorizental(ev))
                 {
-                    // TODO: 2016/4/27 0027  log
-                    android.util.Log.e("tag", "handle Horizental");
+                    Log.e("tag", "handle Horizental");
                     break;
                 }
-                //如果内容滑到顶，则拦截事件
+                //拦截事件
                 else
                 {
 
@@ -846,7 +833,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     /**
      * 开始刷新后不等松手马上回到刷新高度，默认为false
-     *
      * @param upToRefredshingImmediately 是否开启
      */
     // TODO: 2016/4/25 0025 没实现
@@ -858,7 +844,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     /**
      * 下拉是否可以超过Header的高度，默认为false
-     *
      * @param canOverTheHeaderHeight 下拉是否可以超过Header的高度
      */
     public void setCanOverTheHeaderHeight(boolean canOverTheHeaderHeight)
