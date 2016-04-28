@@ -5,6 +5,7 @@ import android.os.Bundle;
 
 import com.dzy.ptr.PullToRefreshLayout;
 import com.dzy.ptr.RefreshLinstener;
+import com.dzy.ptr.ScrollCondition;
 import com.dzy.pulltorefresh.headerview.ArrowHeaderView;
 
 public class AutoRefreshActivity extends AppCompatActivity
@@ -43,5 +44,12 @@ public class AutoRefreshActivity extends AppCompatActivity
         });
 
 
+        mLayout.setScrollableListener(new ScrollCondition() {
+            @Override
+            public boolean canRefresh()
+            {
+                return false;
+            }
+        });
     }
 }

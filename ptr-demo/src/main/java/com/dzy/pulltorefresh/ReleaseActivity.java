@@ -15,7 +15,7 @@ public class ReleaseActivity extends BaseActivity
 
         mLayout.setHeader(new ArrowHeaderView(this));
         mLayout.setRefreshImmediately(false);
-
+        mLayout.setCanScrollWhenRefreshing(false);
         mLayout.setRefreshLinstener(new RefreshLinstener() {
             @Override
             public void onRefreshStart()

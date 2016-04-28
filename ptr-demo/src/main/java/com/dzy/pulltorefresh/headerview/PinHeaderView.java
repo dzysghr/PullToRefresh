@@ -40,7 +40,7 @@ public class PinHeaderView extends FrameLayout implements HeaderController
 
     public void init(Context context)
     {
-        View v = LayoutInflater.from(context).inflate(R.layout.pinheaderlayout,this);
+        View v = LayoutInflater.from(context).inflate(R.layout.pin_headerlayout,this);
         mTV = (TextView) v.findViewById(R.id.tv);
         mPb = (ProgressBar) v.findViewById(R.id.pb);
         mImageView = (ImageView) v.findViewById(R.id.iv_arrow);

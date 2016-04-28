@@ -17,7 +17,6 @@ public class PullRefreshActivit extends BaseActivity
 
         mLayout.setHeader(new ArrowHeaderView(this));
         mLayout.setRefreshImmediately(true);
-
         mLayout.setRefreshLinstener(new RefreshLinstener() {
             @Override
             public void onRefreshStart()

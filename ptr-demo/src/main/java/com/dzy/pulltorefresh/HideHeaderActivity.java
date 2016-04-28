@@ -41,5 +41,7 @@ public class HideHeaderActivity extends AppCompatActivity
 
         mTv = (TextView) findViewById(R.id.tv);
 
+
+
     }
 }
