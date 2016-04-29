@@ -60,7 +60,7 @@ mPullToRefreshLayout.setRefreshImmediately(boolean b);
 mPullToRefreshLayout.setPinHeader(true);
 ```
 
-* 内容固定(默认为false)
+* 内容固定(默认为false,建议同时关闭setCanScrollWhenRefreshing)
 ```
 mPullToRefreshLayout.setPinContent(true);
 ```
@@ -70,7 +70,7 @@ mPullToRefreshLayout.setPinContent(true);
 mPullToRefreshLayout.setForceToTopWhenFinish(true);
 ```
 
-* 刷新时是否可拖动头部(默认为false)
+* 刷新时是否可拖动头部(默认为true)
 ```
 mPullToRefreshLayout.setCanScrollWhenRefreshing(false);
 ```
