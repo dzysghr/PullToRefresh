@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity
 
 
         List<String> list = new ArrayList<String>();
-        list.add("下拉松手刷新");
+        list.add("下拉松手刷新+刷新时不可拉动");
         list.add("超过刷新线刷新");
         list.add("水滴下拉");
         list.add("头部固定");

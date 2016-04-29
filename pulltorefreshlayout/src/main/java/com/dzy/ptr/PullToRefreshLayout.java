@@ -430,18 +430,14 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     {
 
         // TODO: 2016/4/19 0019 逻辑太长，待分解
+        // TODO: 2016/4/29 0029 把各个判断条件抽象成方法
+
+
+
         if (mUIController == null)
             return super.dispatchTouchEvent(ev);
 
         mLastEvent = ev;
-
-        //如果刷新直到完成不可以再拉动头部
-        if ((isFinish || isRefreshing) && !mCanScrollWhenRefreshing||mIsAutoRefreshing)
-        {
-            startY = ev.getY();
-            startX = ev.getX();
-            return super.dispatchTouchEvent(ev);
-        }
 
         //如果刷新完成时强制返回顶部且返回顶部的动画正在执行
         if (mForceToTopWhenFinish && mFinishAndBack.isRunning())
@@ -477,6 +473,15 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                     isDrag = false;
                     break;
                 }
+
+                //如果刷新直到完成不可以再拉动头部，或者正在自动刷新
+                if ((isFinish || isRefreshing) && !mCanScrollWhenRefreshing||mIsAutoRefreshing)
+                {
+                    startY = ev.getY();
+                    startX = ev.getX();
+                    return super.dispatchTouchEvent(ev);
+                }
+
                 //如果滑动幅度太小,不处理
                 if (!isDrag && Math.abs(curY - startY) < mTouchSlop)
                 {
