@@ -21,7 +21,9 @@ public class PinContentActivity extends AppCompatActivity
         mLayout = (PullToRefreshLayout) findViewById(R.id.ptrlayout);
 
         mLayout.setPinContent(true);
+        mLayout.setCanScrollWhenRefreshing(false);
         mLayout.setHeader(new MaterialHeader(this));
+
 
         mLayout.setRefreshLinstener(new RefreshLinstener()
         {

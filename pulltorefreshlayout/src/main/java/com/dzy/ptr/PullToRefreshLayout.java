@@ -430,8 +430,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     {
 
         // TODO: 2016/4/19 0019 逻辑太长，待分解
-        // TODO: 2016/4/29 0029 把各个判断条件抽象成方法
-
+        // TODO: 2016/4/29 0029 把各个判断条件和条件后操作抽象成方法
 
 
         if (mUIController == null)
@@ -446,7 +445,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             startX = ev.getX();
             return super.dispatchTouchEvent(ev);
         }
-
 
         switch (ev.getAction())
         {
@@ -497,7 +495,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                 //拦截事件
                 else
                 {
-
                     //开始处理下拉逻辑
                     isDrag = true;
 
