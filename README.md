@@ -49,46 +49,46 @@
  
 # 功能配置
 
-* 释放刷新or下拉刷新(默认为false，释放刷新)
+* 释放刷新or下拉刷新(默认为`false`，释放刷新)
 
 ```
 mPullToRefreshLayout.setRefreshImmediately(boolean b);
 ```
 
-* 头部固定(默认为false)
+* 头部固定(默认为`false`)
 ```
 mPullToRefreshLayout.setPinHeader(true);
 ```
 
-* 内容固定(默认为false,建议同时关闭setCanScrollWhenRefreshing)
+* 内容固定(默认为`false`,建议同时关闭`setCanScrollWhenRefreshing`)
 ```
 mPullToRefreshLayout.setPinContent(true);
 ```
 
-* 刷新完成强制返回(默认为false)
+* 刷新完成强制返回(默认为`false`)
 ```
 mPullToRefreshLayout.setForceToTopWhenFinish(true);
 ```
 
-* 刷新时是否可拖动头部(默认为true)
+* 刷新时是否可拖动头部(默认为`true`)
 ```
 mPullToRefreshLayout.setCanScrollWhenRefreshing(false);
 ```
 
-* 开启横向滑动处理(默认为false，不处理横向逻辑)
+* 开启横向滑动处理(默认为`false`，不处理横向逻辑)
 
 ```
 mPullToRefreshLayout.setHasHorizontalChild(true);
 ```
 
 
-* 上升动画时间（默认为500ms）
+* 上升动画时间（默认为`500ms`）
 
 ```
 mPullToRefreshLayout.setAnimDuration(int animDuration)
 ```
 
-* 滑动阻尼，默认为2
+* 滑动阻尼，默认为`2`
 
 ```
 mPullToRefreshLayout.setResistance(float resistance)
@@ -97,6 +97,58 @@ mPullToRefreshLayout.setResistance(float resistance)
 # 自定义头部
 
 1. 继承View or ViewGroup ，并实现HeaderController接口，详见demo
+```
+public interface HeaderController
+{
+
+    /**
+     * 触发刷新的下拉高度,单位px,小于等于你的header高度
+     * @return 触发刷新的下拉高度
+     */
+    int getThresholdHeight();
+
+    /**
+     * 正在刷新时的高度,单位px，小于等于你的header高度
+     * @return 正在刷新时的高度
+     */
+    int getRefreshingHeight();
+
+    /**
+     * 当header的状态改变时会调用
+     *
+     * @param state 状态
+     */
+    void StateChange(HeaderState state);
+
+    /**
+     * 开始刷新时被调用，这在个方法实现正在刷新时的动画
+     */
+    void startRefresh();
+
+    /**
+     * 刷新成功时，此方法被调用
+     */
+    void onSucceedRefresh();
+
+    /**
+     * 刷新失败时，此方法被调用
+     */
+    void onFailRefresh();
+
+    /**
+     * 发生拖拽时时此方法会被PullToRefreshLayout调用，可以通过这个偏移量和当前的状态来决定动画的样子
+     * @param offset 当头部不固定时表示位置偏移量，当头部内容固定时表示头部露出的高度
+     *               范围为下拉时从 0 到 header.getMeasureHeight,上升反之。
+    void onPositionChange(float offset);
+
+    /** 当 Controller被设置到PullToRefreshLayout时调用
+     * @param layout 关联的PullToRefreshLayout
+     */
+    void attachLayout(PullToRefreshLayout layout);
+
+}
+```
+
 2. 为PullToRefhreshLayout设置头部
 ```
 mLayout.setHeader(new CustomHeader(context));
