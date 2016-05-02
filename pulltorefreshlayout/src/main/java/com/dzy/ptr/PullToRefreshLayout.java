@@ -36,7 +36,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     //超过刷新线马上刷新，比如 QQ
     private boolean mRefreshImmediately = false;
 
-    // TODO: 2016/4/21 0021 考虑到功能实用性，未实现
     //开始刷新后不等松手马上回到刷新高度
     private boolean mUpToRefredshingImmediately = false;
 
@@ -837,8 +836,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
      * 开始刷新后不等松手马上回到刷新高度，默认为false
      * @param upToRefredshingImmediately 是否开启
      */
-    // TODO: 2016/4/25 0025 没实现
-    private void setUpToRefredshingImmediately(boolean upToRefredshingImmediately)
+    public void setUpToRefredshingImmediately(boolean upToRefredshingImmediately)
     {
         mUpToRefredshingImmediately = upToRefredshingImmediately;
     }

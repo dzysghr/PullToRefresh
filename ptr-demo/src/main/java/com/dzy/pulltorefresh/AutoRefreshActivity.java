@@ -1,11 +1,10 @@
 package com.dzy.pulltorefresh;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 
 import com.dzy.ptr.PullToRefreshLayout;
 import com.dzy.ptr.RefreshLinstener;
-import com.dzy.ptr.ScrollCondition;
 import com.dzy.pulltorefresh.headerview.ArrowHeaderView;
 
 public class AutoRefreshActivity extends AppCompatActivity
@@ -40,15 +39,6 @@ public class AutoRefreshActivity extends AppCompatActivity
                         mLayout.succeedRefresh();
                     }
                 },3000);
-            }
-        });
-
-
-        mLayout.setScrollableListener(new ScrollCondition() {
-            @Override
-            public boolean canRefresh()
-            {
-                return false;
             }
         });
     }
