@@ -114,7 +114,11 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     private float mResistance = 2;
 
 
-    private boolean mIsAutoRefreshing =false;
+    private boolean mIsAutoRefreshing = false;
+
+
+    //动画被取消后,onAnimationEnd方法依然会被调用，所以设变量isAnimating来判断当前动画是否已经取消
+    private boolean isAnimating = false;
 
     private ValueAnimator mBackToTop;
     private ValueAnimator mBackToRefreshing;
@@ -150,7 +154,9 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     }
 
 
-    /** 设置头部
+    /**
+     * 设置头部
+     *
      * @param header 必须实现{@link HeaderController} 接口
      * @param params 布局参数
      */
@@ -183,11 +189,12 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     /**
      * 设置头部
+     *
      * @param header 必须实现{@link HeaderController} 接口
      */
     public void setHeader(View header)
     {
-        setHeader(header,null);
+        setHeader(header, null);
     }
 
     @Override
@@ -249,7 +256,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     }
 
 
-
     @Override
     protected void onFinishInflate()
     {
@@ -283,12 +289,22 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         mBackToRefreshing.addListener(new AnimatorListenerAdapter()
         {
             @Override
+            public void onAnimationStart(Animator animation)
+            {
+                isAnimating = true;
+            }
+
+            @Override
             public void onAnimationEnd(Animator animation)
             {
                 super.onAnimationEnd(animation);
-                //上升到刷新高度后，开始通知header进行刷新动画
-                notifyStateChange(HeaderState.refreshing);
-                mUIController.startRefresh();
+
+                if (isAnimating)
+                {
+                    //上升到刷新高度后，开始通知header进行刷新动画
+                    notifyStateChange(HeaderState.refreshing);
+                    mUIController.startRefresh();
+                }
             }
         });
 
@@ -296,17 +312,25 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         //这个是刷新完成后（无论成功失败），从正在刷新高度返回到顶部的隐藏动画，这个动画应该被headerview调用
         mFinishAndBack = new ValueAnimator();
         mFinishAndBack.setInterpolator(decelerateInterpolator);
-        mFinishAndBack.setDuration(mAnimDuration);
+        mFinishAndBack.setDuration(1000);
         mFinishAndBack.addUpdateListener(this);
         mFinishAndBack.addListener(new AnimatorListenerAdapter()
         {
             @Override
+            public void onAnimationStart(Animator animation)
+            {
+                isAnimating = true;
+            }
+
+            @Override
             public void onAnimationEnd(Animator animation)
             {
-                super.onAnimationEnd(animation);
-                notifyStateChange(HeaderState.hide);
-                isFinish = false;
 
+                if (isAnimating)
+                {
+                    notifyStateChange(HeaderState.hide);
+                    isFinish = false;
+                }
             }
         });
 
@@ -387,12 +411,13 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     public void autoRefresh()
     {
-        if (!isRefreshing&&!isFinish)
+        if (!isRefreshing && !isFinish)
         {
-            ValueAnimator animator = ValueAnimator.ofFloat(0,mRefreshingHeight);
+            ValueAnimator animator = ValueAnimator.ofFloat(0, mRefreshingHeight);
             animator.setDuration(500);
-            mIsAutoRefreshing =true;
-            animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            mIsAutoRefreshing = true;
+            animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener()
+            {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation)
                 {
@@ -406,9 +431,8 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     }
 
 
-
     /**
-     *  参考{@link PullToRefreshLayout#setHandleToTopAnim(boolean)}
+     * 参考{@link PullToRefreshLayout#setHandleToTopAnim(boolean)}
      */
     public void notityFinishAndBack()
     {
@@ -472,7 +496,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                 }
 
                 //如果刷新直到完成不可以再拉动头部，或者正在自动刷新
-                if ((isFinish || isRefreshing) && !mCanScrollWhenRefreshing||mIsAutoRefreshing)
+                if ((isFinish || isRefreshing) && !mCanScrollWhenRefreshing || mIsAutoRefreshing)
                 {
                     startY = ev.getY();
                     startX = ev.getX();
@@ -630,6 +654,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     /**
      * 横向处理，如果子view需要横向滑动且当前滑动确实是横向，则返回true
+     *
      * @param ev 当前事件
      * @return 如果子view需要横向滑动且当前滑动确实是横向，则返回true
      */
@@ -643,7 +668,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         float diffY = ev.getY() - startY;
 
         //判定横向滑动，2是灵敏度， 乘 2 代表当y是x的两倍时才算下拉，否则都算横向
-        if (Math.abs(diffX)*2> Math.abs(diffY))
+        if (Math.abs(diffX) * 2 > Math.abs(diffY))
         {
             android.util.Log.e("tag", "mHorizontalScolling = true");
             mHorizontalScolling = true;
@@ -689,10 +714,10 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             return;
         }
         //如果是自动刷新只需要达到了刷新位置，就开始刷新
-        if (mIsAutoRefreshing&&to>=mRefreshingHeight)
+        if (mIsAutoRefreshing && to >= mRefreshingHeight)
         {
             isRefreshing = true;
-            mIsAutoRefreshing =false;
+            mIsAutoRefreshing = false;
             notifyStateChange(HeaderState.refreshing);
             mUIController.startRefresh();
 
@@ -737,12 +762,15 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     private void cancelAnimIfNeed()
     {
+
+        isAnimating = false;
         if (mBackToTop.isRunning())
             mBackToTop.cancel();
         if (mBackToRefreshing.isRunning())
             mBackToRefreshing.cancel();
         if (!mForceToTopWhenFinish && mFinishAndBack.isRunning())
             mFinishAndBack.cancel();
+
     }
 
     /**
@@ -762,6 +790,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     /**
      * 判断子控件能否向下拉,主要代码来自{@link SwipeRefreshLayout#canChildScrollUp()}
+     *
      * @return 能则返回true
      */
     private boolean canChildScrollUp()
@@ -834,6 +863,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     /**
      * 开始刷新后不等松手马上回到刷新高度，默认为false
+     *
      * @param upToRefredshingImmediately 是否开启
      */
     public void setUpToRefredshingImmediately(boolean upToRefredshingImmediately)
@@ -844,6 +874,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     /**
      * 下拉是否可以超过Header的高度，默认为false
+     *
      * @param canOverTheHeaderHeight 下拉是否可以超过Header的高度
      */
     public void setCanOverTheHeaderHeight(boolean canOverTheHeaderHeight)
@@ -882,6 +913,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
      * 调用 {@link PullToRefreshLayout#notityFinishAndBack()} 来触发上升动画
      * 因为有时需要让header刷新成功的动画播放完才执行上升，与ForceToTopWhenFinish冲突，不能同时为true，当其中一个为true时,另外
      * 一个自动设为false
+     *
      * @param handleToTopAnim 是否开启
      */
     public void setHandleToTopAnim(boolean handleToTopAnim)
@@ -941,6 +973,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     /**
      * 当子view可以横向滑动时，需要开启此选项
      * 开启后建议关闭{@link PullToRefreshLayout#setCanScrollWhenRefreshing(boolean)}，当开始刷新后不再处理header下拉逻辑
+     *
      * @param hasHorizontalChild 是否开启横向检测
      */
     public void setHasHorizontalChild(boolean hasHorizontalChild)
@@ -961,6 +994,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     /**
      * header上升动画时间,默认为500ms
+     *
      * @param animDuration 动画时间,ms
      */
     public void setAnimDuration(int animDuration)
