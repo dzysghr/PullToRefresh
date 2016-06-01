@@ -10,7 +10,7 @@
  * 刷新时是否可拖动头部
  * 刷新完成是否强制返回
  * 刷新时是否隐藏头部
- * ViewPager等横向滑动控件共存(效果比android-Ultra-Pull-To-Refresh更好)
+ * ViewPager等横向滑动控件共存
  * 自动刷新
 
 # Demo
