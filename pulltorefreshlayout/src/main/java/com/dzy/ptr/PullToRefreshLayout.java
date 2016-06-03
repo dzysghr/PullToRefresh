@@ -88,7 +88,8 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     //手指是否还在屏幕上
     private boolean isOnTouch = false;
 
-    //是否已经开始处理滑动逻辑
+    //是否已经开始处理滑动逻辑,这个变量是为了配合mTouchSlop和横向的
+    //如果为true就说明开始处理滑动了就不需要判断什么Touchslop和横向了
     private boolean isDrag = false;
 
     //开始处理滑动时手指的坐标
@@ -100,8 +101,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     //当前位置偏移量
     private float offsetY;
-
-    private MotionEvent mLastEvent;
 
     private int mTouchSlop = 0;
 
@@ -312,7 +311,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         //这个是刷新完成后（无论成功失败），从正在刷新高度返回到顶部的隐藏动画，这个动画应该被headerview调用
         mFinishAndBack = new ValueAnimator();
         mFinishAndBack.setInterpolator(decelerateInterpolator);
-        mFinishAndBack.setDuration(1000);
+        mFinishAndBack.setDuration(mAnimDuration);
         mFinishAndBack.addUpdateListener(this);
         mFinishAndBack.addListener(new AnimatorListenerAdapter()
         {
@@ -448,6 +447,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     }
 
 
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev)
     {
@@ -459,7 +459,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         if (mUIController == null)
             return super.dispatchTouchEvent(ev);
 
-        mLastEvent = ev;
 
         //如果刷新完成时强制返回顶部且返回顶部的动画正在执行
         if (mForceToTopWhenFinish && mFinishAndBack.isRunning())
@@ -521,7 +520,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                     //开始处理下拉逻辑
                     isDrag = true;
 
-                    //dy为滑动距离，被childview消费的不算
+                    //dy为滑动距离，被childview消费的不算,因为startY不是按下时的位置
                     float dy = curY - startY;
 
                     //mResistance 是阻尼系数，为了产生韧性效果
@@ -814,7 +813,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             }
         } else
         {
-            return ViewCompat.canScrollVertically(mChildView, -1);
+            return mChildView.canScrollVertically(-1);
         }
     }
 
@@ -980,7 +979,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     {
         mHasHorizontalChild = hasHorizontalChild;
     }
-
 
     /**
      * 下拉阴尼系数，默认为 2
