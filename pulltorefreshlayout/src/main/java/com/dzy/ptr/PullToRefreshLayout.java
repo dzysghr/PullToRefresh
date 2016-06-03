@@ -116,6 +116,9 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     private boolean mIsAutoRefreshing = false;
 
 
+    //横向处理时的灵敏度，默认为 2
+    private int mHorizontalRatio = 2;
+
     //动画被取消后,onAnimationEnd方法依然会被调用，所以设变量isAnimating来判断当前动画是否已经取消
     private boolean isAnimating = false;
 
@@ -448,7 +451,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     }
 
 
-
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev)
     {
@@ -654,7 +656,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     /**
      * 横向处理，如果子view需要横向滑动且当前滑动确实是横向，则返回true
-     *
      * @param ev 当前事件
      * @return 如果子view需要横向滑动且当前滑动确实是横向，则返回true
      */
@@ -999,5 +1000,16 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     public void setAnimDuration(int animDuration)
     {
         mAnimDuration = animDuration;
+    }
+
+
+    /**
+     * 模向处理的灵敏度，当setHasHorizontalChild 开启时才有效果 ，数值越大手指被识别为横向滑动越容易
+     * @param horizontalRatio 模向处理的灵敏度，范围(0,5)，默认为2，代表当dy是dx的两倍时才算下拉，否则都算横向
+     */
+    public void setHorizontalRatio(int horizontalRatio)
+    {
+        if (horizontalRatio > 0 && horizontalRatio < 5)
+            mHorizontalRatio = horizontalRatio;
     }
 }
