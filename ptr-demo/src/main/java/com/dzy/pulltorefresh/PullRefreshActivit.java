@@ -18,6 +18,7 @@ public class PullRefreshActivit extends BaseActivity
         mLayout.setHeader(new ArrowHeaderView(this));
         mLayout.setRefreshImmediately(true);
         mLayout.setCanScrollWhenRefreshing(false);
+        //mLayout.setUpToRefredshingImmediately(true);
 
         mLayout.setRefreshLinstener(new RefreshLinstener() {
             @Override
@@ -42,6 +43,6 @@ public class PullRefreshActivit extends BaseActivity
                 mAdapter.notifyDataSetChanged();
                 mLayout.succeedRefresh();
             }
-        },2000);
+        },4000);
     }
 }

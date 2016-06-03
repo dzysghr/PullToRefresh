@@ -82,7 +82,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     //是否正在刷新
     private boolean isRefreshing;
 
-    //是否已经刷新完成
+    //是否已经刷新完成，当且仅当刷新已经完成但头部未完全隐藏时为true
     private boolean isFinish;
 
     //手指是否还在屏幕上
@@ -375,19 +375,20 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
      */
     private void processFinish(boolean succeed)
     {
-        isFinish = true;
+
         //如果当前正在刷新才需要处理
         if (isRefreshing)
         {
+            isFinish = true;
             isRefreshing = false;
             if (succeed)
             {
                 notifyStateChange(HeaderState.finish);
-                mUIController.onFailRefresh();
+                mUIController.onSucceedRefresh();
             } else
             {
                 notifyStateChange(HeaderState.fail);
-                mUIController.onSucceedRefresh();
+                mUIController.onFailRefresh();
             }
 
             //如果是强制升回顶部

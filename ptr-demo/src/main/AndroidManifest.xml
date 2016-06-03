@@ -35,6 +35,8 @@
         </activity>
         <activity android:name=".AutoRefreshActivity">
         </activity>
+        <activity android:name=".SwipeLaoutActivity">
+        </activity>
     </application>
 
 </manifest>

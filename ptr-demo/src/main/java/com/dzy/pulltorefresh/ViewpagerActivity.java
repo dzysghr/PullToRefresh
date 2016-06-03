@@ -22,7 +22,7 @@ public class ViewpagerActivity extends AppCompatActivity
         mViewPager = (ViewPager) findViewById(R.id.viewpager);
 
 
-        List<DefaultFragment> fragments = new ArrayList<DefaultFragment>();
+        List<DefaultFragment> fragments = new ArrayList<>();
 
         fragments.add(DefaultFragment.newInstance("one"));
         fragments.add(DefaultFragment.newInstance("two"));
