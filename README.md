@@ -153,6 +153,15 @@ public interface HeaderController
 ```
 mLayout.setHeader(new CustomHeader(context));
 ```
+
+## 关于刷新完成上升控制
+在默认情况下，当刷新完成时（即succeedRefresh、failRefresh被调用），头部会立即执行返回动画，如果你自定义的头部有刷新完成的动画，并希望这些动画执行完成之后才开始上升隐藏头部，可开启
+```
+pulltoRefreshLayout.setHandleToTopAnim(true);
+```
+开启此选项，刷新完成后头部不会上升，需要你在HeaderController中手动调用PullToRefreshLayout#notityFinishAndBack()来执行上升动画，此选项与强制上升选项冲突，开启后强制上升选项自动关闭
+
+
 # 注意事项
 
 * PullToRefreshLayout只能有一个直接子View，
