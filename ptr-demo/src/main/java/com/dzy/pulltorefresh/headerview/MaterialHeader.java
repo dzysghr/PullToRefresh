@@ -23,7 +23,7 @@ public class MaterialHeader extends View implements HeaderController
 {
 
     MaterialProgressDrawable mDrawable;
-    HeaderState mState = HeaderState.drag;
+    int mState = HeaderState.drag;
     ValueAnimator mScaleAnim ;
     PullToRefreshLayout mPullToRefreshLayout;
     float mScale = 1;
@@ -90,7 +90,7 @@ public class MaterialHeader extends View implements HeaderController
     }
 
     @Override
-    public void StateChange(HeaderState state)
+    public void StateChange(int state)
     {
         if (state==HeaderState.hide)
         {
@@ -101,7 +101,7 @@ public class MaterialHeader extends View implements HeaderController
         }
         mState =state;
 
-        Log.e("tag", "state " + mState.toString());
+        Log.e("tag", "state " + mState);
     }
 
     @Override

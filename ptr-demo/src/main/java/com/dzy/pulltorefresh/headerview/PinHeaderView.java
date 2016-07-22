@@ -28,7 +28,7 @@ public class PinHeaderView extends FrameLayout implements HeaderController
 
     private RotateAnimation mArrowUpAnim;
     private RotateAnimation mArrowDownAnim;
-    private HeaderState mLastState = HeaderState.drag;
+    private int mLastState = HeaderState.drag;
 
 
 
@@ -72,7 +72,7 @@ public class PinHeaderView extends FrameLayout implements HeaderController
     }
 
     @Override
-    public void StateChange(HeaderState state)
+    public void StateChange(int state)
     {
         if (state==HeaderState.over)
         {

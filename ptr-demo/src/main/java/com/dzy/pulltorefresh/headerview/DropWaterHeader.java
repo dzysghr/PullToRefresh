@@ -33,7 +33,7 @@ public class DropWaterHeader extends FrameLayout implements HeaderController
     float curSmallY;
 
     Paint p;
-    HeaderState mHeaderState;
+    int mHeaderState;
     ProgressBar mPb;
     TextView mTv;
 
@@ -90,14 +90,14 @@ public class DropWaterHeader extends FrameLayout implements HeaderController
 
 
     @Override
-    public void StateChange(HeaderState state)
+    public void StateChange(int state)
     {
         mHeaderState = state;
         if (mHeaderState == HeaderState.refreshing)
         {
             mPb.setVisibility(View.VISIBLE);
         }
-        Log.d("state", "statechange  " + mHeaderState.toString());
+        Log.d("state", "statechange  " + mHeaderState);
 
         if (mHeaderState == HeaderState.hide)
         {

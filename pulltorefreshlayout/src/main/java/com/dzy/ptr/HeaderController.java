@@ -27,7 +27,7 @@ public interface HeaderController
      *
      * @param state 状态
      */
-    void StateChange(HeaderState state);
+    void StateChange(int state);
 
     /**
      * 开始刷新时被调用，这在个方法实现正在刷新时的动画

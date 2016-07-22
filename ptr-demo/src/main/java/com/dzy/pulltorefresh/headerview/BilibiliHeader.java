@@ -8,7 +8,6 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.os.Build;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 
 import com.dzy.ptr.HeaderController;
@@ -38,8 +37,8 @@ public class BilibiliHeader extends View implements HeaderController {
     private Retangle mFistRet;
     private Retangle mSecondRet;
 
-    private int mRefreshHeight;
-    private int mThresholdHeight;
+    private int mRefreshHeight;//刷新高度
+    private int mThresholdHeight; //触发刷新阈值高度
 
 
     double w = Math.PI / mSmallSpeed;//触角摆一次周期为mSmallSpeed（400），触角角度 =最大角度*sin(wt)，使当t = 200时，角度达到最大值
@@ -74,6 +73,7 @@ public class BilibiliHeader extends View implements HeaderController {
 
     private void init()
     {
+        //触角笔
         mStickPaint = new Paint();
         mStickPaint.setColor(Color.WHITE);
         mStickPaint.setAntiAlias(true);
@@ -129,7 +129,7 @@ public class BilibiliHeader extends View implements HeaderController {
 
 
     //开始触角动画
-    public void start()
+    private void start()
     {
         mIsRunning = true;
         mFistRet = new Retangle();
@@ -138,7 +138,7 @@ public class BilibiliHeader extends View implements HeaderController {
     }
 
     //停止触角动画
-    public void Stop()
+    private void Stop()
     {
         mIsRunning = false;
     }
@@ -166,7 +166,7 @@ public class BilibiliHeader extends View implements HeaderController {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), dp2px(180));
         mRefreshHeight = dp2px(60);
-        mThresholdHeight = dp2px(120);
+        mThresholdHeight = dp2px(130);
         initPoint();
         if (mWhileRect == null)
             mWhileRect = new RectF(0, getMeasuredHeight() - mRefreshHeight, getMeasuredWidth(), getMeasuredHeight() + 20);
@@ -181,20 +181,24 @@ public class BilibiliHeader extends View implements HeaderController {
     {
         super.onDraw(canvas);
 
-        Log.e("tag", "ondraw");
         //画背景
         canvas.drawColor(0xFFFF4F81);
 
-        //画下面白色
+        //画下面白色，高度为mRefreshHeight
         canvas.drawRoundRect(mWhileRect, 15, 15, mWhitePaint);
 
 
-        //如果超过刷新,画波浪动画
+        //如果超过触发线,画波浪动画
         if (mStates == HeaderState.over)
         {
             drawRoundRect(canvas, mFistRet);
             drawRoundRect(canvas, mSecondRet);
             drawShakeStick(canvas, true);
+
+
+            //画上方字体
+            mTopTextPaint.setAlpha(180);
+            canvas.drawText("松手加载", getMeasuredWidth() / 2, getMeasuredHeight() - mOffset + 50, mTopTextPaint);
         }
 
 
@@ -202,10 +206,10 @@ public class BilibiliHeader extends View implements HeaderController {
         if (mStates == HeaderState.drag)
         {
             //画上方字体
-            if (mOffset > mRefreshHeight + 40)//40 表示白色上方露出40的红色时才画
+            if (mOffset > mRefreshHeight + 40)//40 表示白色上方露出40px的红色时才画
             {
-                float pecent = (1 - (mThresholdHeight - mOffset) / (mThresholdHeight - mRefreshHeight));
-                mTopTextPaint.setAlpha((int) (180 * pecent));
+                float percent = (1 - (mThresholdHeight - mOffset) / (mThresholdHeight - mRefreshHeight));
+                mTopTextPaint.setAlpha((int) (170 * percent));
                 canvas.drawText(" 再用力点！", getMeasuredWidth() / 2, getMeasuredHeight() - mThresholdHeight + 50, mTopTextPaint);
             }
 
@@ -218,25 +222,20 @@ public class BilibiliHeader extends View implements HeaderController {
         {
             canvas.drawText("正在更新", getMeasuredWidth() / 2, getMeasuredHeight() - mRefreshHeight + 50, mBottomTextPaint);
         }
-        //如果刷新完成，画下方字体
+        //如果刷新完成，画下方 更新完成
         if (mStates == HeaderState.finish)
         {
             canvas.drawText("更新完成", getMeasuredWidth() / 2, getMeasuredHeight() - mRefreshHeight + 50, mBottomTextPaint);
         }
 
-        //如果超过触发刷新线，画上方字体
-        if (mStates == HeaderState.over)
-        {
-            mTopTextPaint.setAlpha(180);
-            canvas.drawText("松手加载", getMeasuredWidth() / 2, getMeasuredHeight() - mOffset + 50, mTopTextPaint);
-        }
+
     }
 
 
     //画波浪
     private void drawRoundRect(Canvas canvas, Retangle retangle)
     {
-        if (retangle.getDiff() < mDuration)
+        if (retangle.getLifeTime() < mDuration)
         {
             int left = (getMeasuredWidth() - retangle.getCurrentWidth()) / 2;
             int top = (getMeasuredHeight() - retangle.getCurrentHigh()) / 2;
@@ -258,10 +257,10 @@ public class BilibiliHeader extends View implements HeaderController {
         //如果是摆动状态的触角，则根据波浪的生命来计算
         if (isShake)
         {
-            float diff = mFistRet.getDiff();
+            float diff = mFistRet.getLifeTime();
             if (diff > mSmallSpeed)//触角摆动一次周期为波浪生命前mSmallSpeed ms,如果时间超过了mSmallSpeed,则观察下一个波浪
             {
-                diff = mSecondRet.getDiff();
+                diff = mSecondRet.getLifeTime();
                 if (diff < mSmallSpeed)
                 {
                     rotate = (float) (mShakeAngle * Math.sin(w * diff));
@@ -274,7 +273,7 @@ public class BilibiliHeader extends View implements HeaderController {
         {
             //一开始为60度，离触发线越近，触角越垂直
             rotate = 60;
-            if (mOffset > mRefreshHeight + 20)
+            if (mOffset > mRefreshHeight + 20) //等下方白色完全露出后才进行
             {
                 rotate = 60 * (mThresholdHeight - mOffset) / (mThresholdHeight - mRefreshHeight - 20);
             }
@@ -285,14 +284,14 @@ public class BilibiliHeader extends View implements HeaderController {
         float right = left + mStickWidth;
         float bottom = top + mStickHigh;
 
-        //画右长条
+        //画右触角
         canvas.save();
         canvas.translate(mRightX, mRightY + 50);
         canvas.rotate(rotate);
         canvas.drawRect(left, top, right, bottom, mStickPaint);
         canvas.restore();
 
-        //画左长条
+        //画左长触角
         canvas.save();
         canvas.translate(mLeftX, mLeftY + 50);
         canvas.rotate(-rotate);
@@ -316,11 +315,11 @@ public class BilibiliHeader extends View implements HeaderController {
     }
 
 
-    private HeaderState mStates;
+    private int mStates;
     private float mOffset;
 
     @Override
-    public void StateChange(HeaderState state)
+    public void StateChange(int state)
     {
         mStates = state;
         if (state == HeaderState.over)
@@ -392,7 +391,7 @@ public class BilibiliHeader extends View implements HeaderController {
             this.mCreateTime = System.currentTimeMillis();
         }
 
-        public long getDiff()
+        public long getLifeTime()
         {
             return System.currentTimeMillis() - mCreateTime;
         }

@@ -125,7 +125,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     private ValueAnimator mBackToTop;
     private ValueAnimator mBackToRefreshing;
     private ValueAnimator mFinishAndBack;
-    private HeaderState mHeaderState;
+    private int mHeaderState;
     private DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator(2);
 
 
@@ -776,10 +776,9 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
     /**
      * 通知Header状态改变
-     *
      * @param state 状态枚举 {@link com.dzy.ptr.HeaderState}
      */
-    private void notifyStateChange(HeaderState state)
+    private void notifyStateChange(int state)
     {
         //android.util.Log.e("state", state.toString());
         if (mHeaderState != state)
