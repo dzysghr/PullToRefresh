@@ -37,6 +37,8 @@ public class MainActivity extends AppCompatActivity
         list.add("刷新时隐藏头部");
         list.add("viewPager共存");
         list.add("自动刷新+ScrollView");
+        list.add("bilibili");
+
 
 
         mLv.setAdapter(new CommenAdapter<String>(this, list)
@@ -72,6 +74,8 @@ public class MainActivity extends AppCompatActivity
                     startActivity(new Intent(MainActivity.this,ViewpagerActivity.class));
                 else if (position==8)
                     startActivity(new Intent(MainActivity.this,AutoRefreshActivity.class));
+                else if (position==9)
+                    startActivity(new Intent(MainActivity.this,BilibiliActivity.class));
 
             }
         });
