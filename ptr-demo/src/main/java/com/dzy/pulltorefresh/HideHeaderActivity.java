@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.widget.TextView;
 
 import com.dzy.ptr.PullToRefreshLayout;
-import com.dzy.ptr.RefreshLinstener;
+import com.dzy.ptr.RefreshListener;
 import com.dzy.pulltorefresh.headerview.ArrowHeaderView;
 
 public class HideHeaderActivity extends AppCompatActivity
@@ -22,7 +22,7 @@ public class HideHeaderActivity extends AppCompatActivity
         mLayout.setHeader(new ArrowHeaderView(this));
         mLayout.setHideWhenRefresh(true);
         mLayout.setRefreshImmediately(true);
-        mLayout.setRefreshLinstener(new RefreshLinstener() {
+        mLayout.setRefreshListener(new RefreshListener() {
             @Override
             public void onRefreshStart()
             {

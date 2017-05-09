@@ -195,7 +195,6 @@ public class BilibiliHeader extends View implements HeaderController {
             drawRoundRect(canvas, mSecondRet);
             drawShakeStick(canvas, true);
 
-
             //画上方字体
             mTopTextPaint.setAlpha(180);
             canvas.drawText("松手加载", getMeasuredWidth() / 2, getMeasuredHeight() - mOffset + 50, mTopTextPaint);

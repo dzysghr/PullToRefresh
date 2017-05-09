@@ -10,7 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.dzy.ptr.PullToRefreshLayout;
-import com.dzy.ptr.RefreshLinstener;
+import com.dzy.ptr.RefreshListener;
 import com.dzy.pulltorefresh.adapter.DefaultRecycleViewAdapter;
 import com.dzy.pulltorefresh.headerview.MaterialHeader;
 
@@ -60,7 +60,7 @@ public class DefaultFragment extends Fragment
         mLayout.setHasHorizontalChild(true);
         mLayout.setCanScrollWhenRefreshing(false);
 
-        mLayout.setRefreshLinstener(new RefreshLinstener() {
+        mLayout.setRefreshListener(new RefreshListener() {
             @Override
             public void onRefreshStart()
             {

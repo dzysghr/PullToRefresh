@@ -2,7 +2,7 @@ package com.dzy.pulltorefresh;
 
 import android.os.Bundle;
 
-import com.dzy.ptr.RefreshLinstener;
+import com.dzy.ptr.RefreshListener;
 import com.dzy.pulltorefresh.headerview.ArrowHeaderView;
 
 public class ReleaseActivity extends BaseActivity
@@ -15,7 +15,7 @@ public class ReleaseActivity extends BaseActivity
 
         mLayout.setHeader(new ArrowHeaderView(this));
         mLayout.setRefreshImmediately(false);
-        mLayout.setRefreshLinstener(new RefreshLinstener() {
+        mLayout.setRefreshListener(new RefreshListener() {
             @Override
             public void onRefreshStart()
             {

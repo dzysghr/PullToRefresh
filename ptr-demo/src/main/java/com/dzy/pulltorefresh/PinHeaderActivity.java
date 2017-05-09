@@ -6,7 +6,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
 import com.dzy.ptr.PullToRefreshLayout;
-import com.dzy.ptr.RefreshLinstener;
+import com.dzy.ptr.RefreshListener;
 import com.dzy.pulltorefresh.adapter.DefaultRecycleViewAdapter;
 import com.dzy.pulltorefresh.headerview.PinHeaderView;
 
@@ -33,7 +33,7 @@ public class PinHeaderActivity extends AppCompatActivity
 
 
 
-        mLayout.setRefreshLinstener(new RefreshLinstener()
+        mLayout.setRefreshListener(new RefreshListener()
         {
             @Override
             public void onRefreshStart()

@@ -4,7 +4,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 import com.dzy.ptr.PullToRefreshLayout;
-import com.dzy.ptr.RefreshLinstener;
+import com.dzy.ptr.RefreshListener;
 import com.dzy.pulltorefresh.headerview.MaterialHeader;
 
 public class PinContentActivity extends AppCompatActivity
@@ -25,7 +25,7 @@ public class PinContentActivity extends AppCompatActivity
         mLayout.setHeader(new MaterialHeader(this));
 
 
-        mLayout.setRefreshLinstener(new RefreshLinstener()
+        mLayout.setRefreshListener(new RefreshListener()
         {
             @Override
             public void onRefreshStart()

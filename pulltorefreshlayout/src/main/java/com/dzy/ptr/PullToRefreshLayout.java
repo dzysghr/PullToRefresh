@@ -37,13 +37,13 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     private boolean mRefreshImmediately = false;
 
     //开始刷新后不等松手马上回到刷新高度
-    private boolean mUpToRefredshingImmediately = false;
+    private boolean mUpToRefreshingImmediately = false;
 
     //实现，刷新时不显示头部，微信朋友圈
     private boolean mHideWhenRefresh = false;
 
-    //子view正在处理横向滑动，mHasHorizentalChild开启时才用到
-    private boolean mHorizontalScolling = false;
+    //子view正在处理横向滑动，mHasHorizontalChild开启时才用到
+    private boolean mHorizontalScrolling = false;
 
     //实现
     //下拉是否可以超过Header的高度
@@ -68,7 +68,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     private boolean mPinContent = false;
 
     //刷新回调，当刷新发生时会回调该接口
-    private RefreshLinstener mRefreshLinstener;
+    private RefreshListener mRefreshListeners;
 
     private ScrollCondition mCondition;
 
@@ -144,7 +144,6 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
         super(context, attrs, defStyleAttr);
         if (!isInEditMode())
             mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
-
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -572,7 +571,7 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
 
                 isOnTouch = false;
                 isDrag = false;
-                mHorizontalScolling = false;
+                mHorizontalScrolling = false;
                 LastPos = offsetY;
 
                 //如果header已经完全隐藏了，则由子view去处理action_up和cancel事件
@@ -638,8 +637,8 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
                     {
                         notifyStateChange(HeaderState.release);
                         isRefreshing = true;
-                        if (mRefreshLinstener != null)
-                            mRefreshLinstener.onRefreshStart();
+                        if (mRefreshListeners != null)
+                            mRefreshListeners.onRefreshStart();
                     }
                     return true;
                 }
@@ -662,17 +661,17 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     private boolean checkHorizental(MotionEvent ev)
     {
 
-        if (mHorizontalScolling)
+        if (mHorizontalScrolling)
             return true;
 
         float diffX = ev.getX() - startX;
         float diffY = ev.getY() - startY;
 
         //判定横向滑动，2是灵敏度， 乘 2 代表当y是x的两倍时才算下拉，否则都算横向
-        if (Math.abs(diffX) * 2 > Math.abs(diffY))
+        if (Math.abs(diffX) * mHorizontalRatio > Math.abs(diffY))
         {
-            android.util.Log.e("tag", "mHorizontalScolling = true");
-            mHorizontalScolling = true;
+            android.util.Log.e("tag", "mHorizontalScrolling = true");
+            mHorizontalScrolling = true;
             return true;
         }
 
@@ -702,12 +701,12 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             notifyStateChange(HeaderState.refreshing);
             mUIController.startRefresh();
 
-            if (mRefreshLinstener != null)
-                mRefreshLinstener.onRefreshStart();
+            if (mRefreshListeners != null)
+                mRefreshListeners.onRefreshStart();
 
 
             //如果开始刷新后需要立即返回到刷新高度的话
-            if (mUpToRefredshingImmediately)
+            if (mUpToRefreshingImmediately)
             {
                 mBackToRefreshing.setIntValues((int) to, mRefreshingHeight);
                 mBackToRefreshing.start();
@@ -722,8 +721,8 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
             notifyStateChange(HeaderState.refreshing);
             mUIController.startRefresh();
 
-            if (mRefreshLinstener != null)
-                mRefreshLinstener.onRefreshStart();
+            if (mRefreshListeners != null)
+                mRefreshListeners.onRefreshStart();
             return;
         }
 
@@ -823,19 +822,19 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     从下面开始都是getter、setter
      */
 
-    public RefreshLinstener getRefreshLinstener()
+    public RefreshListener getRefreshListener()
     {
-        return mRefreshLinstener;
+        return mRefreshListeners;
     }
 
     /**
      * 刷新回调，当开始刷新时会调用该接口
      *
-     * @param refreshLinstener 回调接口
+     * @param refreshListener 回调接口
      */
-    public void setRefreshLinstener(RefreshLinstener refreshLinstener)
+    public void setRefreshListener(RefreshListener refreshListener)
     {
-        mRefreshLinstener = refreshLinstener;
+        mRefreshListeners = refreshListener;
     }
 
 
@@ -864,11 +863,11 @@ public class PullToRefreshLayout extends FrameLayout implements ValueAnimator.An
     /**
      * 开始刷新后不等松手马上回到刷新高度，默认为false
      *
-     * @param upToRefredshingImmediately 是否开启
+     * @param upToRefreshingImmediately 是否开启
      */
-    public void setUpToRefredshingImmediately(boolean upToRefredshingImmediately)
+    public void setUpToRefreshingImmediately(boolean upToRefreshingImmediately)
     {
-        mUpToRefredshingImmediately = upToRefredshingImmediately;
+        mUpToRefreshingImmediately = upToRefreshingImmediately;
     }
 
 
